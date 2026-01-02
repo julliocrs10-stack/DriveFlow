@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriverFinance - Tudo em Um</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* Estilos e Animações */
+        .input-field {
+            background-color: #f3f4f6;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            width: 100%;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .input-field:focus { box-shadow: 0 0 0 2px #6366f1; }
+        
+        .btn-primary {
+            color: white;
+            font-weight: bold;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn-primary:active { transform: scale(0.95); filter: brightness(0.9); }
+        
+        .nav-item { text-align: center; color: #9ca3af; transition: color 0.3s; flex: 1; }
+        .nav-item.active { color: #4f46e5; }
+        
+        .tab-content { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        body { padding-bottom: 80px; background-color: #f9fafb; }
+    </style>
+</head>
+<body>
+
+    <header class="bg-indigo-600 text-white p-6 rounded-b-3xl shadow-lg mb-4">
+        <h1 class="text-xl font-bold">DriverFinance</h1>
+        <p class="text-sm opacity-80" id="current-period">Carregando...</p>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto">
+        
+        <section id="tab-dashboard" class="tab-content">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-500">
+                    <p class="text-xs text-gray-500 uppercase">Ganhos</p>
+                    <h2 class="text-lg font-bold text-green-600" id="dash-total-gains">R$ 0,00</h2>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-red-500">
+                    <p class="text-xs text-gray-500 uppercase">Gastos</p>
+                    <h2 class="text-lg font-bold text-red-600" id="dash-total-expenses">R$ 0,00</h2>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm mb-6 text-center">
+                <p class="text-gray-500">Lucro Líquido</p>
+                <h1 class="text-3xl font-black text-indigo-700" id="dash-net-profit">R$ 0,00</h1>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm mb-6">
+                <div class="flex justify-between mb-2">
+                    <span class="text-sm font-medium">Meta de Lucro</span>
+                    <span class="text-sm font-bold" id="goal-percent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="goal-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+            <canvas id="mainChart"></canvas>
+        </section>
+
+        <section id="tab-input" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-lg mb-4 text-green-600">Registrar Corrida</h3>
+                <form id="form-gain" class="space-y-3">
+                    <input type="number" step="0.01" placeholder="Valor Ganhos (R$)" class="input-field" required id="gain-value">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" class="input-field" required id="gain-date">
+                        <input type="number" placeholder="KM Rodados" class="input-field" required id="gain-km">
+                    </div>
+                    <button type="submit" class="btn-primary bg-green-500">Salvar Ganhos</button>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-lg mb-4 text-red-500">Registrar Despesa</h3>
+                <form id="form-expense" class="space-y-3">
+                    <input type="text" placeholder="Ex: Gasolina, Oficina" class="input-field" required id="exp-name">
+                    <input type="number" step="0.01" placeholder="Valor Gasto (R$)" class="input-field" required id="exp-value">
+                    <input type="date" class="input-field" required id="exp-date">
+                    <button type="submit" class="btn-primary bg-red-500">Salvar Despesa</button>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
+                <h3 class="font-bold mb-2">Sua Meta Mensal (R$)</h3>
+                <input type="number" id="meta-input" placeholder="Ex: 3000" class="input-field mb-2 text-center">
+                <button onclick="saveGoal()" class="btn-primary bg-indigo-600">Definir Meta</button>
+            </div>
+        </section>
+
+        <section id="tab-reports" class="tab-content hidden">
+            <div class="bg-white p-4 rounded-2xl mb-4 space-y-3">
+                <h3 class="font-bold">Filtro de Data</h3>
+                <div class="flex gap-2">
+                    <input type="date" id="filter-start" class="input-field text-sm">
+                    <input type="date" id="filter-end" class="input-field text-sm">
+                </div>
+                <button onclick="updateData()" class="w-full bg-indigo-100 text-indigo-700 py-2 rounded-xl font-bold">Atualizar Relatório</button>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm">
+                <p class="text-sm text-gray-500">Média de Ganho por KM</p>
+                <h2 class="text-2xl font-bold" id="rep-gain-km">R$ 0,00</h2>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3">
+        <button onclick="showTab('dashboard')" class="nav-item active" id="nav-dashboard">
+            <span class="block text-xl">📊</span><span class="text-xs">Início</span>
+        </button>
+        <button onclick="showTab('input')" class="nav-item" id="nav-input">
+            <span class="block text-xl">➕</span><span class="text-xs">Lançar</span>
+        </button>
+        <button onclick="showTab('reports')" class="nav-item" id="nav-reports">
+            <span class="block text-xl">📈</span><span class="text-xs">Relatórios</span>
+        </button>
+    </nav>
+
+    <script>
+        // --- CONFIGURAÇÃO FIREBASE (SUBSTITUA AQUI) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ",
+            authDomain: "driveflow-49296.firebaseapp.com",
+            projectId: "driveflow-49296",
+            storageBucket: "driveflow-49296.firebasestorage.app",
+            messagingSenderId: "1067278316892",
+            appId: "1:1067278316892:web:e72e316200e7379e9f7d99"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const userId = "motorista_001"; // ID fixo para exemplo
+
+        // --- LÓGICA DO APP ---
+        let mainChart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultDates();
+            initCharts();
+            updateData();
+        });
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('nav-' + tab).classList.add('active');
+        }
+
+        function setDefaultDates() {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            document.getElementById('filter-start').value = firstDay;
+            document.getElementById('filter-end').value = lastDay;
+            document.getElementById('current-period').innerText = `Período: ${now.toLocaleString('pt-br', {month: 'long'})}`;
+        }
+
+        // Salvar Ganho
+        document.getElementById('form-gain').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await db.collection('users').doc(userId).collection('gains').add({
+                value: parseFloat(document.getElementById('gain-value').value),
+                date: document.getElementById('gain-date').value,
+                km: parseFloat(document.getElementById('gain-km').value)
+            });
+            alert("Sucesso!"); e.target.reset(); updateData();
+        });
+
+        // Salvar Despesa
+        document.getElementById('form-expense').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await db.collection('users').doc(userId).collection('expenses').add({
+                name: document.getElementById('exp-name').value,
+                value: parseFloat(document.getElementById('exp-value').value),
+                date: document.getElementById('exp-date').value
+            });
+            alert("Sucesso!"); e.target.reset(); updateData();
+        });
+
+        async function saveGoal() {
+            const val = document.getElementById('meta-input').value;
+            await db.collection('users').doc(userId).set({ monthlyGoal: parseFloat(val) }, {merge: true});
+            alert("Meta Salva!"); updateData();
+        }
+
+        async function updateData() {
+            const start = document.getElementById('filter-start').value;
+            const end = document.getElementById('filter-end').value;
+
+            const gainsSnap = await db.collection('users').doc(userId).collection('gains').where('date', '>=', start).where('date', '<=', end).get();
+            const expSnap = await db.collection('users').doc(userId).collection('expenses').where('date', '>=', start).where('date', '<=', end).get();
+            const userSnap = await db.collection('users').doc(userId).get();
+
+            let totalG = 0, totalKM = 0, totalE = 0;
+            gainsSnap.forEach(d => { totalG += d.data().value; totalKM += d.data().km; });
+            expSnap.forEach(d => totalE += d.data().value);
+            
+            const profit = totalG - totalE;
+            const goal = userSnap.data()?.monthlyGoal || 0;
+
+            document.getElementById('dash-total-gains').innerText = `R$ ${totalG.toFixed(2)}`;
+            document.getElementById('dash-total-expenses').innerText = `R$ ${totalE.toFixed(2)}`;
+            document.getElementById('dash-net-profit').innerText = `R$ ${profit.toFixed(2)}`;
+            document.getElementById('rep-gain-km').innerText = totalKM > 0 ? `R$ ${(totalG / totalKM).toFixed(2)}` : "R$ 0,00";
+
+            const perc = goal > 0 ? Math.min((profit / goal) * 100, 100) : 0;
+            document.getElementById('goal-percent').innerText = `${perc.toFixed(0)}%`;
+            document.getElementById('goal-bar').style.width = `${perc}%`;
+
+            mainChart.data.datasets[0].data = [totalG, totalE];
+            mainChart.update();
+        }
+
+        function initCharts() {
+            mainChart = new Chart(document.getElementById('mainChart'), {
+                type: 'doughnut',
+                data: { labels: ['Ganhos', 'Gastos'], datasets: [{ data: [0, 0], backgroundColor: ['#10b981', '#ef4444'] }] }
+            });
+        }
+    </script>
+</body>
+</html>
