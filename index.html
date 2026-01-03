@@ -3,528 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DriveFlow - Ultra Premium Pro</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <title>DriveFlow - Gestão Profissional</title>
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> 
 
-    <style>
-        :root { --bg-dark: #020617; }
-        body { 
-            background-color: var(--bg-dark); color: #f1f5f9; 
-            font-family: 'Inter', sans-serif; overflow-x: hidden; font-size: 1.2rem;
-        }
-        .glass-card {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 3rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        
-        .filter-container { padding: 1.5rem; border-radius: 2rem; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.1); }
-        .filter-input { background: transparent; color: white; font-weight: 800; font-size: 1.3rem; outline: none; width: 100%; text-align: center; }
+    <style> 
+    :root { --bg-dark: #020617; } 
+    body { background-color: var(--bg-dark); color: #f1f5f9; font-family: 'Inter', sans-serif; overflow-x: hidden; font-size: 1rem; } 
 
-        .label-micro { font-size: 0.85rem; font-weight: 900; letter-spacing: 0.2em; color: #64748b; text-transform: uppercase; }
-        .value-huge { font-size: 3.2rem; font-weight: 900; line-height: 1; }
-        
-        .report-row { display: flex; justify-content: space-between; padding: 1.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .report-val { font-weight: 900; font-size: 1.4rem; }
+    .glass-card { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); } 
+    .filter-container { padding: 0.8rem; border-radius: 1rem; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.1); } 
+    .filter-input { background: transparent; color: white; font-weight: 700; font-size: 0.9rem; outline: none; width: 100%; text-align: center; } 
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeInUp 0.6s ease-out forwards; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .label-micro { font-size: 0.65rem; font-weight: 900; letter-spacing: 0.15em; color: #64748b; text-transform: uppercase; } 
+    .value-huge { font-size: 1.8rem; font-weight: 900; line-height: 1; } 
 
-        .nav-icon-container { padding: 14px; border-radius: 1.5rem; transition: all 0.3s; }
-        .active-nav-dash { background: rgba(16, 185, 129, 0.15); color: #10b981; filter: drop-shadow(0 0 10px #10b981); }
-        .active-nav-input { background: rgba(99, 102, 241, 0.15); color: #818cf8; filter: drop-shadow(0 0 10px #818cf8); }
-        .active-nav-report { background: rgba(251, 113, 133, 0.15); color: #fb7185; filter: drop-shadow(0 0 10px #fb7185); }
+    .report-row { display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); } 
+    .report-val { font-weight: 900; font-size: 1.1rem; } 
 
-        .input-field {
-            background: #1e293b; border: 2px solid #334155; border-radius: 1.8rem;
-            padding: 1.5rem; width: 100%; color: white; outline: none; font-size: 1.4rem;
-        }
-    </style>
+    .tab-content { display: none; margin-bottom: 140px; } 
+    .tab-content.active { display: block; animation: fadeInUp 0.4s ease-out forwards; } 
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } 
+
+    .nav-icon-container { padding: 8px; border-radius: 1rem; transition: all 0.3s; } 
+    .active-nav-dash { background: rgba(16, 185, 129, 0.15); color: #10b981; filter: drop-shadow(0 0 5px #10b981); } 
+    .active-nav-input { background: rgba(99, 102, 241, 0.15); color: #818cf8; filter: drop-shadow(0 0 5px #818cf8); } 
+    .active-nav-report { background: rgba(251, 113, 133, 0.15); color: #fb7185; filter: drop-shadow(0 0 5px #fb7185); } 
+
+    .input-field { background: #1e293b; border: 2px solid #334155; border-radius: 1.2rem; padding: 1rem; width: 100%; color: white; outline: none; font-size: 1.1rem; } 
+    </style> 
 </head>
-<body class="pb-44">
+<body>
 
-    <header class="p-8 sticky top-0 bg-[#020617]/95 backdrop-blur-3xl z-50 border-b border-white/5">
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-5xl font-black tracking-tighter italic">Drive<span class="text-emerald-400">Flow</span></h1>
-                <p id="display-date" class="label-micro text-emerald-400 mt-2"></p>
-            </div>
-            <div class="glass-card px-8 py-4 text-right">
-                <span class="label-micro text-emerald-400">Líquido Caixa</span>
-                <p class="text-4xl font-black text-emerald-400" id="dash-net-profit">R$ 0</p>
-            </div>
-        </div>
-        
-        <div class="filter-container flex items-center gap-4">
-            <input type="date" id="date-start" class="filter-input" onchange="updateAllData()">
-            <span class="text-slate-600 font-bold">➜</span>
-            <input type="date" id="date-end" class="filter-input" onchange="updateAllData()">
-        </div>
-    </header>
+<header class="p-5 sticky top-0 bg-[#020617]/95 backdrop-blur-3xl z-50 border-b border-white/5"> 
+    <div class="flex justify-between items-center mb-5"> 
+        <div> 
+            <h1 class="text-3xl font-black tracking-tighter italic text-white">Drive<span class="text-emerald-400">Flow</span></h1> 
+            <p id="display-date" class="label-micro text-emerald-400 mt-1"></p> 
+        </div> 
+        <div class="glass-card px-4 py-2 text-right"> 
+            <span class="label-micro text-emerald-400">Líquido</span> 
+            <p class="text-xl font-black text-emerald-400" id="dash-net-profit">R$ 0</p> 
+        </div> 
+    </div> 
+    <div class="filter-container flex items-center gap-2"> 
+        <input type="date" id="date-start" class="filter-input" onchange="updateAllData()"> 
+        <span class="text-slate-600 font-bold">➜</span> 
+        <input type="date" id="date-end" class="filter-input" onchange="updateAllData()"> 
+    </div> 
+</header> 
 
-    <main class="px-8 space-y-12">
-        <section id="tab-dashboard" class="tab-content active space-y-12">
-            <div class="glass-card p-10 border-t-8 border-emerald-500">
-                <div class="flex justify-between items-end mb-8">
-                    <div><h3 class="text-2xl font-bold">Meta do Mês</h3><p class="label-micro" id="goal-value-display"></p></div>
-                    <span id="goal-percent" class="text-6xl font-black italic">0%</span>
-                </div>
-                <div class="h-6 bg-slate-800 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="h-full bg-emerald-500 shadow-[0_0_20px_#10b981] transition-all duration-1000"></div>
-                </div>
-            </div>
+<main class="px-5 space-y-6"> 
+    <section id="tab-dashboard" class="tab-content active space-y-6"> 
+        <div class="glass-card p-6 border-t-4 border-emerald-500"> 
+            <div class="flex justify-between items-end mb-4"> 
+                <div><h3 class="text-lg font-bold">Meta do Mês</h3><p class="label-micro" id="goal-value-display"></p></div> 
+                <span id="goal-percent" class="text-3xl font-black italic">0%</span> 
+            </div> 
+            <div class="h-3 bg-slate-800 rounded-full overflow-hidden"> 
+                <div id="progress-bar" class="h-full bg-emerald-500 shadow-[0_0_15px_#10b981] transition-all duration-1000"></div> 
+            </div> 
+        </div> 
 
-            <div class="glass-card p-10">
-                <h3 class="label-micro mb-8 text-center">Balanço Financeiro</h3>
-                <div style="height: 300px;"><canvas id="chartPieDash"></canvas></div>
-            </div>
+        <div class="glass-card p-6"> 
+            <h3 class="label-micro mb-4 text-center">Balanço Financeiro</h3> 
+            <div style="height: 220px;"><canvas id="chartPieDash"></canvas></div> 
+        </div> 
 
-            <section class="grid grid-cols-1 gap-8">
-                <div class="glass-card p-10 border-l-[18px] border-emerald-500 flex justify-between items-center">
-                    <span class="label-micro">Ganhos Brutos</span>
-                    <span class="value-huge text-emerald-400" id="ind-gain">R$ 0</span>
-                </div>
-                <div class="glass-card p-10 border-l-[18px] border-rose-500 flex justify-between items-center text-right">
-                    <span class="label-micro">Gastos Totais</span>
-                    <span class="value-huge text-rose-400" id="ind-expense">R$ 0</span>
-                </div>
-            </section>
+        <section class="grid grid-cols-1 gap-4"> 
+            <div class="glass-card p-6 border-l-[10px] border-emerald-500 flex justify-between items-center"> 
+                <span class="label-micro">Bruto</span> 
+                <span class="value-huge text-emerald-400" id="ind-gain">R$ 0</span> 
+            </div> 
+            <div class="glass-card p-6 border-l-[10px] border-rose-500 flex justify-between items-center"> 
+                <span class="label-micro">Gastos</span> 
+                <span class="value-huge text-rose-400" id="ind-expense">R$ 0</span> 
+            </div> 
+        </section> 
 
-            <section class="glass-card p-10 bg-emerald-500/5 border-emerald-500/20">
-                <h3 class="label-micro mb-8 text-emerald-400 flex items-center gap-3 text-lg">
-                    <span class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></span> Performance Rápida
-                </h3>
-                <div class="grid grid-cols-1 gap-8">
-                    <div class="flex justify-between items-center border-b border-white/5 pb-6">
-                        <span class="label-micro">R$ por KM</span>
-                        <span class="text-4xl font-black text-indigo-400" id="perf-km">0</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-white/5 pb-6">
-                        <span class="label-micro">R$ por Hora</span>
-                        <span class="text-4xl font-black text-emerald-400" id="perf-hour">0</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-white/5 pb-6">
-                        <span class="label-micro">Custo por Hora</span>
-                        <span class="text-4xl font-black text-rose-400" id="perf-cost-hour">0</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="label-micro">Margem Real</span>
-                        <span class="text-4xl font-black text-emerald-400" id="perf-margin">0%</span>
-                    </div>
-                </div>
-            </section>
-        </section>
+        <section class="glass-card p-6 bg-emerald-500/5 border-emerald-500/20"> 
+            <h3 class="label-micro mb-6 text-emerald-400 flex items-center gap-3 text-sm"> 
+                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> Performance Rápida 
+            </h3> 
+            <div class="grid grid-cols-1 gap-5"> 
+                <div class="flex justify-between items-center border-b border-white/5 pb-3"> 
+                    <span class="label-micro">R$ por KM</span> 
+                    <span class="text-2xl font-black text-indigo-400" id="perf-km">0</span> 
+                </div> 
+                <div class="flex justify-between items-center border-b border-white/5 pb-3"> 
+                    <span class="label-micro">R$ por Hora</span> 
+                    <span class="text-2xl font-black text-emerald-400" id="perf-hour">0</span> 
+                </div> 
+                <div class="flex justify-between items-center border-b border-white/5 pb-3"> 
+                    <span class="label-micro">Custo/Hora</span> 
+                    <span class="text-2xl font-black text-rose-400" id="perf-cost-hour">0</span> 
+                </div> 
+                <div class="flex justify-between items-center"> 
+                    <span class="label-micro">Margem</span> 
+                    <span class="text-2xl font-black text-emerald-400" id="perf-margin">0%</span> 
+                </div> 
+            </div> 
+        </section> 
+    </section> 
 
-        <section id="tab-input" class="tab-content space-y-8">
-            <div class="grid grid-cols-1 gap-8 pt-4">
-                <button onclick="openModalEntry()" class="glass-card p-12 border-b-8 border-emerald-500 flex justify-between items-center active:scale-95 transition-all">
-                    <div class="text-left"><p class="text-4xl font-black italic uppercase">Novo Lançamento</p><p class="label-micro">Clique para registrar</p></div>
-                    <span class="text-6xl">💰</span>
-                </button>
-                <button onclick="openModalGoal()" class="glass-card p-12 border-b-8 border-indigo-500 flex justify-between items-center active:scale-95 transition-all">
-                    <div class="text-left"><p class="text-4xl font-black italic uppercase">Meta Mensal</p><p class="label-micro">Definir objetivo</p></div>
-                    <span class="text-6xl">🎯</span>
-                </button>
-            </div>
-            <div id="history-list" class="space-y-6 pt-6"></div>
-        </section>
+    <section id="tab-input" class="tab-content space-y-5"> 
+        <div class="grid grid-cols-1 gap-4 pt-4"> 
+            <button onclick="openModalEntry()" class="glass-card p-6 border-b-4 border-emerald-500 flex justify-between items-center active:scale-95 transition-all"> 
+                <div class="text-left"><p class="text-xl font-black italic uppercase">Novo Lançamento</p><p class="label-micro">Registrar Agora</p></div> 
+                <span class="text-3xl">💰</span> 
+            </button> 
+            <button onclick="openModalGoal()" class="glass-card p-6 border-b-4 border-indigo-500 flex justify-between items-center active:scale-95 transition-all"> 
+                <div class="text-left"><p class="text-xl font-black italic uppercase">Meta Mensal</p><p class="label-micro">Ajustar Alvo</p></div> 
+                <span class="text-3xl">🎯</span> 
+            </button> 
+        </div> 
+        <div id="history-list" class="space-y-4 pt-4"></div> 
+    </section> 
 
-        <section id="tab-reports" class="tab-content space-y-12">
-            <div id="printable-report" class="space-y-10">
-                <h2 class="text-4xl font-black italic uppercase text-center">Relatório Geral</h2>
-                <div id="main-chart-container" class="glass-card p-10">
-                    <h3 id="main-chart-title" class="label-micro mb-8">Faturamento</h3>
-                    <div style="height: 400px;"><canvas id="chartMainReport"></canvas></div>
-                </div>
-                <div id="category-charts" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
-                    <div class="glass-card p-10">
-                        <h3 class="label-micro mb-8 text-center">Ganhos por Categoria</h3>
-                        <div style="height: 300px;"><canvas id="chartPieGains"></canvas></div>
-                    </div>
-                    <div class="glass-card p-10">
-                        <h3 class="label-micro mb-8 text-center">Gastos por Categoria</h3>
-                        <div style="height: 300px;"><canvas id="chartPieExpenses"></canvas></div>
-                    </div>
-                </div>
-                <div class="glass-card p-10 space-y-4">
-                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Financeiro Detalhado</h3>
-                    <div class="report-row"><span>Ganhos Totais</span><span class="report-val text-emerald-400" id="rep-total-gain">R$ 0</span></div>
-                    <div class="report-row"><span>Despesas Lançadas</span><span class="report-val text-rose-400" id="rep-total-loss">R$ 0</span></div>
-                    <div class="report-row"><span>Gasto Combustível (Est.)</span><span class="report-val text-orange-400" id="rep-fuel-est">R$ 0</span></div>
-                    <div class="report-row pt-6 border-t-4 border-slate-700">
-                        <span class="font-black text-2xl">LUCRO LÍQUIDO</span>
-                        <span class="report-val text-emerald-400 text-4xl" id="rep-net">R$ 0</span>
-                    </div>
-                </div>
-                <div class="glass-card p-10 space-y-4">
-                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Métricas de Trabalho</h3>
-                    <div class="report-row"><span>Dias Trabalhados</span><span class="report-val" id="rep-days">0</span></div>
-                    <div class="report-row"><span>Distância Total</span><span class="report-val" id="rep-km">0 km</span></div>
-                    <div class="report-row"><span>Horas Operação</span><span class="report-val" id="rep-hours">0h</span></div>
-                    <div class="report-row"><span>Distância Média / Dia</span><span class="report-val text-blue-400" id="rep-avg-dist-day">0 km</span></div>
-                </div>
-                <div class="glass-card p-10 space-y-4">
-                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Médias Brutas (Faturamento)</h3>
-                    <div class="report-row"><span>Média R$ / KM</span><span class="report-val text-emerald-400" id="avg-bruto-km">R$ 0</span></div>
-                    <div class="report-row"><span>Média R$ / Dia</span><span class="report-val text-emerald-400" id="avg-bruto-day">R$ 0</span></div>
-                    <div class="report-row"><span>Média R$ / Corrida</span><span class="report-val text-emerald-400" id="avg-bruto-run">R$ 0</span></div>
-                    <div class="report-row"><span>Média R$ / Hora</span><span class="report-val text-emerald-400" id="avg-bruto-hour">R$ 0</span></div>
-                </div>
-                <div class="glass-card p-10 space-y-4">
-                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Médias Líquidas (Lucro)</h3>
-                    <div class="report-row"><span>Lucro Médio / KM</span><span class="report-val text-emerald-500" id="avg-liq-km">R$ 0</span></div>
-                    <div class="report-row"><span>Lucro Médio / Dia</span><span class="report-val text-emerald-500" id="avg-liq-day">R$ 0</span></div>
-                    <div class="report-row"><span>Lucro Médio / Corrida</span><span class="report-val text-emerald-500" id="avg-liq-run">R$ 0</span></div>
-                    <div class="report-row"><span>Lucro Médio / Hora</span><span class="report-val text-emerald-500" id="avg-liq-hour">R$ 0</span></div>
-                </div>
-            </div>
-            <button onclick="exportToPDF()" class="w-full glass-card p-12 bg-rose-600/20 border-b-8 border-rose-500 flex items-center justify-center gap-6 active:scale-95 transition-all">
-                <span class="text-5xl">📄</span>
-                <span class="text-3xl font-black uppercase italic">Gerar PDF</span>
-            </button>
-        </section>
-    </main>
-
-    <nav class="fixed bottom-0 left-0 right-0 h-32 bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-8 z-[100]">
-        <button onclick="showTab('dashboard')" id="nav-dash" class="btn-nav active-nav-dash flex flex-col items-center">
-            <div class="nav-icon-container"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>
-            <span class="label-micro">Painel</span>
-        </button>
-        <button onclick="showTab('input')" id="nav-input" class="btn-nav text-slate-500 flex flex-col items-center">
-            <div class="nav-icon-container"><svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg></div>
-            <span class="label-micro">Lançar</span>
-        </button>
-        <button onclick="showTab('reports')" id="nav-reports" class="btn-nav text-slate-500 flex flex-col items-center">
-            <div class="nav-icon-container"><svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
-            <span class="label-micro">Relatórios</span>
-        </button>
-    </nav>
-
-    <div id="modal-entry" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-8">
-        <div class="glass-card w-full max-w-xl p-12">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-4xl font-black italic uppercase">Registro</h2>
-                <button onclick="deleteEntry()" id="btn-delete" class="hidden bg-rose-600 text-white px-6 py-2 rounded-2xl font-black text-xs uppercase">Excluir</button>
-            </div>
-            <form id="form-entry" class="space-y-6">
-                <input type="hidden" id="edit-id">
-                <select id="entry-type" onchange="updateFormFields()" class="input-field font-bold">
-                    <optgroup label="Ganhos">
-                        <option value="gain">📱 App (Uber/99)</option>
-                        <option value="particular">🚗 Particular</option>
-                        <option value="bonus">🎁 Bônus/Gorjeta</option>
-                    </optgroup>
-                    <optgroup label="Gastos">
-                        <option value="fuel">⛽ Abastecimento</option>
-                        <option value="maintenance">🛠️ Manutenção</option>
-                        <option value="tax">📑 Taxas/Impostos</option>
-                        <option value="expense">📉 Outros Gastos</option>
-                    </optgroup>
-                </select>
-                <input type="number" step="0.01" id="entry-value" class="input-field text-5xl h-28 text-center" placeholder="R$ 0,00" required>
-                <input type="date" id="entry-date" class="input-field" required>
-
-                <div id="fields-gain" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="number" id="gain-km" class="input-field" placeholder="KM">
-                        <input type="number" step="0.1" id="gain-hours" class="input-field" placeholder="Horas">
-                    </div>
-                    <input type="number" step="0.1" id="gain-cons" class="input-field" placeholder="Consumo Médio (KM/L)">
-                </div>
-
-                <div id="fields-fuel" class="hidden">
-                    <input type="number" step="0.001" id="fuel-price" class="input-field" placeholder="Preço do Litro R$">
-                </div>
-
-                <textarea id="entry-obs" class="input-field h-32 text-lg" placeholder="Observações (opcional)..."></textarea>
-
-                <div class="flex gap-4 pt-6">
-                    <button type="button" onclick="closeModal('entry')" class="flex-1 p-8 rounded-3xl bg-slate-800 font-black text-xl">FECHAR</button>
-                    <button type="submit" class="flex-[2] p-8 rounded-3xl bg-emerald-600 font-black text-xl shadow-lg shadow-emerald-900/20">GRAVAR</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="modal-goal" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-8">
-        <div class="glass-card w-full max-w-sm p-12 text-center">
-            <h2 class="text-3xl font-black italic mb-10 uppercase text-emerald-400">Meta Mensal</h2>
-            <input type="number" id="goal-input" class="input-field text-center text-4xl font-black mb-10">
-            <button onclick="saveGoal()" class="w-full p-8 rounded-3xl bg-emerald-600 font-black text-xl uppercase">Salvar Alvo</button>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // ==========================================
-        // COLOQUE SUAS CHAVES DO FIREBASE AQUI:
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ",
-            authDomain: "driveflow-49296.firebaseapp.com",
-            projectId: "driveflow-49296",
-            storageBucket: "driveflow-49296.firebasestorage.app",
-            messagingSenderId: "1067278316892",
-            appId: "1:1067278316892:web:e72e316200e7379e9f7d99"
-        };
-
-        // Inicialização Segura (Se as chaves não forem alteradas, ele não tenta conectar)
-        if(firebaseConfig.apiKey !== "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ") {
-            const app = initializeApp(firebaseConfig);
-            window.db_cloud = getFirestore(app);
-            console.log("Firebase Conectado");
-        }
-    </script>
-
-    <script>
-        let myMainChart, myPieDash, myPieGains, myPieExpenses;
-        let db = JSON.parse(localStorage.getItem('driveflow_v9')) || { entries: [], meta: 5000 };
-        
-        const categories = {
-            gain: { label: 'App', icon: '📱', isGain: true, color: '#10b981' },
-            particular: { label: 'Particular', icon: '🚗', isGain: true, color: '#34d399' },
-            bonus: { label: 'Bônus', icon: '🎁', isGain: true, color: '#6ee7b7' },
-            fuel: { label: 'Gasolina', icon: '⛽', isGain: false, color: '#f43f5e' },
-            maintenance: { label: 'Manutenção', icon: '🛠️', isGain: false, color: '#f97316' },
-            tax: { label: 'Taxas', icon: '📑', isGain: false, color: '#f59e0b' },
-            expense: { label: 'Gastos', icon: '📉', isGain: false, color: '#fb7185' }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => { initDates(); initCharts(); updateAllData(); });
-
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            document.querySelectorAll('.btn-nav').forEach(b => b.className = 'btn-nav text-slate-500 flex flex-col items-center');
+    <section id="tab-reports" class="tab-content space-y-6"> 
+        <div id="printable-report" class="space-y-6"> 
+            <h2 class="text-2xl font-black italic uppercase text-center">Relatório Geral</h2> 
             
-            const activeClass = id === 'dashboard' ? 'active-nav-dash' : id === 'input' ? 'active-nav-input' : 'active-nav-report';
-            document.getElementById('nav-' + (id==='reports'?'reports':id==='dashboard'?'dash':'input')).className = `btn-nav ${activeClass} flex flex-col items-center`;
-        }
+            <div id="main-chart-container" class="glass-card p-5"> 
+                <h3 id="main-chart-title" class="label-micro mb-4">Demanda e Faturamento</h3> 
+                <div style="height: 250px;"><canvas id="chartMainReport"></canvas></div> 
+            </div> 
 
-        function updateAllData() {
-            const startStr = document.getElementById('date-start').value;
-            const endStr = document.getElementById('date-end').value;
-            const start = new Date(startStr);
-            const end = new Date(endStr);
-            const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+            <div id="category-charts" class="grid grid-cols-1 gap-4 hidden"> 
+                <div class="glass-card p-5"> 
+                    <h3 class="label-micro mb-4 text-center">Ganhos por Categoria</h3> 
+                    <div style="height: 200px;"><canvas id="chartPieGains"></canvas></div> 
+                </div> 
+                <div class="glass-card p-5"> 
+                    <h3 class="label-micro mb-4 text-center">Gastos por Categoria</h3> 
+                    <div style="height: 200px;"><canvas id="chartPieExpenses"></canvas></div> 
+                </div> 
+            </div> 
 
-            const filtered = db.entries.filter(i => i.date >= startStr && i.date <= endStr);
+            <div class="glass-card p-6 space-y-2"> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2">Financeiro Detalhado</h3> 
+                <div class="report-row"><span>Ganhos Totais</span><span class="report-val text-emerald-400" id="rep-total-gain">R$ 0</span></div> 
+                <div class="report-row"><span>Despesas Lançadas</span><span class="report-val text-rose-400" id="rep-total-loss">R$ 0</span></div> 
+                <div class="report-row"><span>Gasto Combustível (Est.)</span><span class="report-val text-orange-400" id="rep-fuel-est">R$ 0</span></div> 
+                <div class="report-row pt-4 border-t-2 border-slate-700"> 
+                    <span class="font-black">LUCRO LÍQUIDO</span> 
+                    <span class="report-val text-emerald-400 text-2xl" id="rep-net">R$ 0</span> 
+                </div> 
+            </div> 
 
-            const totalG = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
-            const totalE = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
-            const totalKM = filtered.reduce((a,b) => a + (b.km || 0), 0);
-            const totalH = filtered.reduce((a,b) => a + (b.hours || 0), 0);
-            const runs = filtered.filter(i => categories[i.type].isGain).length || 1;
-            const daysCount = [...new Set(filtered.map(i => i.date))].length || 1;
-            
-            const liquidoReal = totalG - totalE;
-            const lastPrice = filtered.filter(i => i.type === 'fuel').reverse()[0]?.fuelPrice || 5.80;
-            const fuelEst = filtered.filter(i => categories[i.type].isGain && i.cons > 0).reduce((a,b) => a + ((b.km/b.cons) * lastPrice), 0);
+            <div class="glass-card p-6 space-y-2"> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2">Métricas de Trabalho</h3> 
+                <div class="report-row"><span>Dias Trabalhados</span><span class="report-val" id="rep-days">0</span></div> 
+                <div class="report-row"><span>Distância Total</span><span class="report-val" id="rep-km">0 km</span></div> 
+                <div class="report-row"><span>Horas Operação</span><span class="report-val" id="rep-hours">0h</span></div> 
+                <div class="report-row"><span>Distância Média / Dia</span><span class="report-val text-blue-400" id="rep-avg-dist-day">0 km</span></div> 
+            </div>
 
-            document.getElementById('dash-net-profit').innerText = `R$ ${liquidoReal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
-            document.getElementById('ind-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR')}`;
-            document.getElementById('ind-expense').innerText = `R$ ${totalE.toLocaleString('pt-BR')}`;
-            
-            document.getElementById('perf-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00';
-            document.getElementById('perf-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00';
-            document.getElementById('perf-cost-hour').innerText = totalH > 0 ? `R$ ${(totalE/totalH).toFixed(2)}` : 'R$ 0,00';
-            document.getElementById('perf-margin').innerText = totalG > 0 ? ((liquidoReal/totalG)*100).toFixed(0) + '%' : '0%';
+            <div class="glass-card p-6 space-y-2"> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2">Médias Brutas</h3> 
+                <div class="report-row"><span>Média R$ / KM</span><span class="report-val text-emerald-400" id="avg-bruto-km">R$ 0</span></div> 
+                <div class="report-row"><span>Média R$ / Dia</span><span class="report-val text-emerald-400" id="avg-bruto-day">R$ 0</span></div> 
+                <div class="report-row"><span>Média R$ / Corrida</span><span class="report-val text-emerald-400" id="avg-bruto-run">R$ 0</span></div> 
+                <div class="report-row"><span>Média R$ / Hora</span><span class="report-val text-emerald-400" id="avg-bruto-hour">R$ 0</span></div> 
+            </div>
 
-            document.getElementById('rep-total-gain').innerText = `R$ ${totalG.toFixed(2)}`;
-            document.getElementById('rep-total-loss').innerText = `R$ ${totalE.toFixed(2)}`;
-            document.getElementById('rep-fuel-est').innerText = `R$ ${fuelEst.toFixed(2)}`;
-            document.getElementById('rep-net').innerText = `R$ ${liquidoReal.toFixed(2)}`;
-            document.getElementById('rep-days').innerText = daysCount;
-            document.getElementById('rep-km').innerText = totalKM.toFixed(1) + ' km';
-            document.getElementById('rep-hours').innerText = totalH.toFixed(1) + 'h';
-            document.getElementById('rep-avg-dist-day').innerText = (totalKM / daysCount).toFixed(1) + ' km';
+            <div class="glass-card p-6 space-y-2 border-t-4 border-emerald-500/50"> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2 text-emerald-400">Médias Líquidas</h3> 
+                <div class="report-row"><span>Lucro Médio / KM</span><span class="report-val text-emerald-500" id="avg-liq-km">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro Médio / Dia</span><span class="report-val text-emerald-500" id="avg-liq-day">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro Médio / Corrida</span><span class="report-val text-emerald-500" id="avg-liq-run">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro Médio / Hora</span><span class="report-val text-emerald-500" id="avg-liq-hour">R$ 0</span></div> 
+            </div>
+        </div> 
+        <button onclick="exportToPDF()" class="w-full glass-card p-6 bg-rose-600/20 border-b-4 border-rose-500 flex items-center justify-center gap-4 active:scale-95 transition-all"> 
+            <span class="text-2xl">📄</span> 
+            <span class="text-xl font-black uppercase italic">Gerar PDF</span> 
+        </button> 
+    </section> 
+</main> 
 
-            document.getElementById('avg-bruto-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00';
-            document.getElementById('avg-bruto-day').innerText = `R$ ${(totalG/daysCount).toFixed(2)}`;
-            document.getElementById('avg-bruto-run').innerText = `R$ ${(totalG/runs).toFixed(2)}`;
-            document.getElementById('avg-bruto-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00';
+<nav class="fixed bottom-0 left-0 right-0 h-20 bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-4 z-[100]"> 
+    <button onclick="showTab('dashboard')" id="nav-dash" class="btn-nav active-nav-dash flex flex-col items-center"> 
+        <div class="nav-icon-container"><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div> 
+        <span class="label-micro">Painel</span> 
+    </button> 
+    <button onclick="showTab('input')" id="nav-input" class="btn-nav text-slate-500 flex flex-col items-center"> 
+        <div class="nav-icon-container"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg></div> 
+        <span class="label-micro">Lançar</span> 
+    </button> 
+    <button onclick="showTab('reports')" id="nav-reports" class="btn-nav text-slate-500 flex flex-col items-center"> 
+        <div class="nav-icon-container"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div> 
+        <span class="label-micro">Relatórios</span> 
+    </button> 
+</nav> 
 
-            document.getElementById('avg-liq-km').innerText = totalKM > 0 ? `R$ ${(liquidoReal/totalKM).toFixed(2)}` : 'R$ 0,00';
-            document.getElementById('avg-liq-day').innerText = `R$ ${(liquidoReal/daysCount).toFixed(2)}`;
-            document.getElementById('avg-liq-run').innerText = `R$ ${(liquidoReal/runs).toFixed(2)}`;
-            document.getElementById('avg-liq-hour').innerText = totalH > 0 ? `R$ ${(liquidoReal/totalH).toFixed(2)}` : 'R$ 0,00';
+<div id="modal-entry" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-4"> 
+    <div class="glass-card w-full max-w-sm p-6 overflow-y-auto max-h-[90vh]"> 
+        <div class="flex justify-between items-center mb-6"> 
+            <h2 class="text-xl font-black italic uppercase">Registro</h2> 
+            <button onclick="deleteEntry()" id="btn-delete" class="hidden bg-rose-600 text-white px-4 py-1 rounded-xl font-black text-[10px] uppercase">Excluir</button> 
+        </div> 
+        <form id="form-entry" class="space-y-4"> 
+            <input type="hidden" id="edit-id"> 
+            <select id="entry-type" onchange="updateFormFields()" class="input-field font-bold text-sm"> 
+                <optgroup label="Ganhos"> 
+                    <option value="gain">📱 App (Uber/99)</option> 
+                    <option value="particular">🚗 Particular</option> 
+                    <option value="bonus">🎁 Bônus/Gorjeta</option> 
+                </optgroup> 
+                <optgroup label="Gastos"> 
+                    <option value="fuel">⛽ Abastecimento</option> 
+                    <option value="maintenance">🛠️ Manutenção</option> 
+                    <option value="tax">📑 Taxas/Impostos</option> 
+                    <option value="expense">📉 Outros Gastos</option> 
+                </optgroup> 
+            </select> 
+            <input type="number" step="0.01" id="entry-value" class="input-field text-3xl h-20 text-center" placeholder="R$ 0,00" required> 
+            <input type="date" id="entry-date" class="input-field" required> 
+            <div id="fields-gain" class="space-y-4"> 
+                <div class="grid grid-cols-2 gap-3"> 
+                    <input type="number" id="gain-km" class="input-field text-sm" placeholder="KM"> 
+                    <input type="number" step="0.1" id="gain-hours" class="input-field text-sm" placeholder="Horas"> 
+                </div> 
+                <input type="number" step="0.1" id="gain-cons" class="input-field text-sm" placeholder="Consumo (KM/L)"> 
+            </div> 
+            <div id="fields-fuel" class="hidden"> 
+                <input type="number" step="0.001" id="fuel-price" class="input-field text-sm" placeholder="Preço do Litro R$"> 
+            </div> 
+            <textarea id="entry-obs" class="input-field h-20 text-sm" placeholder="Observações..."></textarea> 
+            <div class="flex gap-3 pt-4"> 
+                <button type="button" onclick="closeModal('entry')" class="flex-1 p-4 rounded-2xl bg-slate-800 font-black">FECHAR</button> 
+                <button type="submit" class="flex-[2] p-4 rounded-2xl bg-emerald-600 font-black">GRAVAR</button> 
+            </div> 
+        </form> 
+    </div> 
+</div> 
 
-            const perc = Math.min((liquidoReal / db.meta) * 100, 100);
-            document.getElementById('progress-bar').style.width = Math.max(perc, 0) + '%';
-            document.getElementById('goal-percent').innerText = Math.round(perc) + '%';
-            document.getElementById('goal-value-display').innerText = `Alvo: R$ ${db.meta.toLocaleString()}`;
+<div id="modal-goal" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-4"> 
+    <div class="glass-card w-full max-w-xs p-8 text-center"> 
+        <h2 class="text-xl font-black italic mb-6 uppercase text-emerald-400">Meta Mensal</h2> 
+        <input type="number" id="goal-input" class="input-field text-center text-2xl font-black mb-6"> 
+        <button onclick="saveGoal()" class="w-full p-4 rounded-2xl bg-emerald-600 font-black uppercase">Salvar</button> 
+    </div> 
+</div> 
 
-            updateCharts(filtered, diffDays);
+<script type="module"> 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"; 
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
+const firebaseConfig = { apiKey: "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ", authDomain: "driveflow-49296.firebaseapp.com", projectId: "driveflow-49296", storageBucket: "driveflow-49296.firebasestorage.app", messagingSenderId: "1067278316892", appId: "1:1067278316892:web:e72e316200e7379e9f7d99" }; 
+if(firebaseConfig.apiKey !== "SUA_API_KEY") { const app = initializeApp(firebaseConfig); window.db_cloud = getFirestore(app); } 
+</script> 
 
-            document.getElementById('history-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(i => `
-                <div onclick="openModalEntry(${i.id})" class="glass-card p-8 flex justify-between items-center border-l-[15px] ${i.value >= 0 && categories[i.type].isGain ? 'border-emerald-500' : 'border-rose-500'}">
-                    <div>
-                        <p class="label-micro">${i.date.split('-').reverse().join('/')}</p>
-                        <p class="text-3xl font-black uppercase italic">${categories[i.type].icon} ${categories[i.type].label}</p>
-                        ${i.obs ? `<p class="text-sm opacity-40 italic mt-2 truncate max-w-[200px]">${i.obs}</p>` : ''}
-                    </div>
-                    <div class="text-right">
-                        <p class="text-3xl font-black ${categories[i.type].isGain ? 'text-emerald-400' : 'text-rose-400'}">
-                            ${categories[i.type].isGain ? '+' : '-'} R$ ${i.value.toFixed(2)}
-                        </p>
-                    </div>
-                </div>`).join('');
-        }
+<script> 
+let myMainChart, myPieDash, myPieGains, myPieExpenses; 
+let db = JSON.parse(localStorage.getItem('driveflow_v9')) || { entries: [], meta: 5000 }; 
 
-        function initCharts() {
-            const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-            myPieDash = new Chart(document.getElementById('chartPieDash'), {
-                type: 'doughnut',
-                data: { labels: ['Ganhos', 'Gastos'], datasets: [{ data: [1, 0], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
-                options: chartOptions
-            });
-            myMainChart = new Chart(document.getElementById('chartMainReport'), {
-                type: 'bar',
-                data: { labels: [], datasets: [] },
-                options: chartOptions
-            });
-            const pieOpt = { ...chartOptions, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff' } } } };
-            myPieGains = new Chart(document.getElementById('chartPieGains'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt });
-            myPieExpenses = new Chart(document.getElementById('chartPieExpenses'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt });
-        }
+// CORES CONTRASTANTES
+const categories = { 
+    gain: { label: 'App', icon: '📱', isGain: true, color: '#10b981' }, 
+    particular: { label: 'Particular', icon: '🚗', isGain: true, color: '#3b82f6' }, 
+    bonus: { label: 'Bônus', icon: '🎁', isGain: true, color: '#8b5cf6' }, 
+    fuel: { label: 'Gasolina', icon: '⛽', isGain: false, color: '#f43f5e' }, 
+    maintenance: { label: 'Manutenção', icon: '🛠️', isGain: false, color: '#f97316' }, 
+    tax: { label: 'Taxas', icon: '📑', isGain: false, color: '#eab308' }, 
+    expense: { label: 'Gastos', icon: '📉', isGain: false, color: '#ec4899' } 
+}; 
 
-        function updateCharts(filtered, diff) {
-            const g = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
-            const e = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
-            myPieDash.data.datasets[0].data = [g || 1, e];
-            myPieDash.update();
+document.addEventListener('DOMContentLoaded', () => { initDates(); initCharts(); updateAllData(); }); 
 
-            const title = document.getElementById('main-chart-title');
-            const categorySection = document.getElementById('category-charts');
-            
-            if (diff === 1) {
-                title.innerText = "Detalhamento do Dia";
-                categorySection.classList.add('hidden');
-                const dataMap = {};
-                filtered.forEach(i => dataMap[i.type] = (dataMap[i.type] || 0) + i.value);
-                myMainChart.config.type = 'bar';
-                myMainChart.data.labels = Object.keys(dataMap).map(k => categories[k].label);
-                myMainChart.data.datasets = [{ data: Object.values(dataMap), backgroundColor: Object.keys(dataMap).map(k => categories[k].color), borderRadius: 10 }];
-            } else {
-                categorySection.classList.remove('hidden');
-                title.innerText = diff <= 7 ? "Faturamento Semanal" : "Faturamento Mensal";
-                const labels = [...new Set(filtered.map(i => i.date))].sort();
-                const datasetG = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
-                myMainChart.config.type = 'bar';
-                myMainChart.data.labels = labels.map(l => l.split('-').reverse().slice(0,2).join('/'));
-                myMainChart.data.datasets = [{ label: 'Ganhos', data: datasetG, backgroundColor: '#10b981', borderRadius: 8 }];
+function showTab(id) { 
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
+    document.getElementById('tab-' + id).classList.add('active'); 
+    document.querySelectorAll('.btn-nav').forEach(b => b.className = 'btn-nav text-slate-500 flex flex-col items-center'); 
+    const activeClass = id === 'dashboard' ? 'active-nav-dash' : id === 'input' ? 'active-nav-input' : 'active-nav-report'; 
+    document.getElementById('nav-' + (id==='reports'?'reports':id==='dashboard'?'dash':'input')).className = `btn-nav ${activeClass} flex flex-col items-center`; 
+} 
 
-                const gainsMap = {}, expMap = {};
-                filtered.forEach(i => {
-                    if(categories[i.type].isGain) gainsMap[i.type] = (gainsMap[i.type] || 0) + i.value;
-                    else expMap[i.type] = (expMap[i.type] || 0) + i.value;
-                });
-                myPieGains.data.labels = Object.keys(gainsMap).map(k => categories[k].label);
-                myPieGains.data.datasets = [{ data: Object.values(gainsMap), backgroundColor: Object.keys(gainsMap).map(k => categories[k].color), borderWidth: 0 }];
-                myPieGains.update();
-                myPieExpenses.data.labels = Object.keys(expMap).map(k => categories[k].label);
-                myPieExpenses.data.datasets = [{ data: Object.values(expMap), backgroundColor: Object.keys(expMap).map(k => categories[k].color), borderWidth: 0 }];
-                myPieExpenses.update();
-            }
-            myMainChart.update();
-        }
+function initCharts() { 
+    const chartOptions = { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
+            y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } }
+        },
+        plugins: { legend: { display: false } } 
+    };
 
-        function openModalEntry(id = null) {
-            document.getElementById('form-entry').reset();
-            document.getElementById('edit-id').value = id || '';
-            document.getElementById('btn-delete').classList.toggle('hidden', !id);
-            if(id) {
-                const i = db.entries.find(e => e.id == id);
-                document.getElementById('entry-type').value = i.type;
-                document.getElementById('entry-value').value = i.value;
-                document.getElementById('entry-date').value = i.date;
-                document.getElementById('gain-km').value = i.km || '';
-                document.getElementById('gain-hours').value = i.hours || '';
-                document.getElementById('gain-cons').value = i.cons || '';
-                document.getElementById('fuel-price').value = i.fuelPrice || '';
-                document.getElementById('entry-obs').value = i.obs || '';
-            }
-            updateFormFields();
-            document.getElementById('modal-entry').classList.replace('hidden', 'flex');
-        }
+    myMainChart = new Chart(document.getElementById('chartMainReport'), { type: 'bar', data: { labels: [], datasets: [] }, options: chartOptions });
+    myPieDash = new Chart(document.getElementById('chartPieDash'), { type: 'doughnut', data: { labels: ['Ganhos', 'Gastos'], datasets: [{ data: [1, 0], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+    
+    const pieOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff', font: { size: 10 } } } } };
+    myPieGains = new Chart(document.getElementById('chartPieGains'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt }); 
+    myPieExpenses = new Chart(document.getElementById('chartPieExpenses'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt }); 
+} 
 
-        function closeModal(m) { document.getElementById('modal-' + m).classList.replace('flex', 'hidden'); }
-        function updateFormFields() {
-            const t = document.getElementById('entry-type').value;
-            document.getElementById('fields-gain').classList.toggle('hidden', !categories[t].isGain);
-            document.getElementById('fields-fuel').classList.toggle('hidden', t !== 'fuel');
-        }
+function updateAllData() { 
+    const startStr = document.getElementById('date-start').value; 
+    const endStr = document.getElementById('date-end').value; 
+    const filtered = db.entries.filter(i => i.date >= startStr && i.date <= endStr); 
+    
+    const totalG = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
+    const totalE = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
+    const totalKM = filtered.reduce((a,b) => a + (b.km || 0), 0); 
+    const totalH = filtered.reduce((a,b) => a + (b.hours || 0), 0); 
+    const runs = filtered.filter(i => categories[i.type].isGain).length || 1; 
+    const daysCount = [...new Set(filtered.map(i => i.date))].length || 1; 
+    const liquidoReal = totalG - totalE; 
+    const lastPrice = filtered.filter(i => i.type === 'fuel').reverse()[0]?.fuelPrice || 5.80; 
+    const fuelEst = filtered.filter(i => categories[i.type].isGain && i.cons > 0).reduce((a,b) => a + ((b.km/b.cons) * lastPrice), 0); 
 
-        document.getElementById('form-entry').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            const data = {
-                id: id ? parseInt(id) : Date.now(),
-                type: document.getElementById('entry-type').value,
-                value: parseFloat(document.getElementById('entry-value').value),
-                date: document.getElementById('entry-date').value,
-                km: parseFloat(document.getElementById('gain-km').value) || 0,
-                hours: parseFloat(document.getElementById('gain-hours').value) || 0,
-                cons: parseFloat(document.getElementById('gain-cons').value) || 0,
-                fuelPrice: parseFloat(document.getElementById('fuel-price').value) || 0,
-                obs: document.getElementById('entry-obs').value
-            };
-            
-            // Salva Local
-            if(id) { const idx = db.entries.findIndex(e => e.id == id); db.entries[idx] = data; }
-            else db.entries.push(data);
-            localStorage.setItem('driveflow_v9', JSON.stringify(db));
+    // UI Updates
+    document.getElementById('dash-net-profit').innerText = `R$ ${liquidoReal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+    document.getElementById('ind-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR')}`; 
+    document.getElementById('ind-expense').innerText = `R$ ${totalE.toLocaleString('pt-BR')}`; 
+    
+    document.getElementById('perf-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('perf-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('perf-cost-hour').innerText = totalH > 0 ? `R$ ${(totalE/totalH).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('perf-margin').innerText = totalG > 0 ? ((liquidoReal/totalG)*100).toFixed(0) + '%' : '0%'; 
 
-            // Salva Firebase (se estiver configurado)
-            if(window.db_cloud) {
-                try {
-                    await setDoc(doc(window.db_cloud, "entries", data.id.toString()), data);
-                } catch(err) { console.error("Erro Nuvem:", err); }
-            }
+    // Relatório
+    document.getElementById('rep-total-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+    document.getElementById('rep-total-loss').innerText = `R$ ${totalE.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+    document.getElementById('rep-fuel-est').innerText = `R$ ${fuelEst.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+    document.getElementById('rep-net').innerText = `R$ ${liquidoReal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+    document.getElementById('rep-days').innerText = daysCount; 
+    document.getElementById('rep-km').innerText = totalKM.toFixed(1) + ' km'; 
+    document.getElementById('rep-hours').innerText = totalH.toFixed(1) + 'h'; 
+    document.getElementById('rep-avg-dist-day').innerText = (totalKM / daysCount).toFixed(1) + ' km'; 
 
-            closeModal('entry'); updateAllData();
-        };
+    document.getElementById('avg-bruto-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('avg-bruto-day').innerText = `R$ ${(totalG/daysCount).toFixed(2)}`; 
+    document.getElementById('avg-bruto-run').innerText = `R$ ${(totalG/runs).toFixed(2)}`; 
+    document.getElementById('avg-bruto-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00'; 
 
-        function deleteEntry() {
-            if(confirm('Excluir este registro?')) {
-                db.entries = db.entries.filter(e => e.id != document.getElementById('edit-id').value);
-                localStorage.setItem('driveflow_v9', JSON.stringify(db));
-                closeModal('entry'); updateAllData();
-            }
-        }
+    document.getElementById('avg-liq-km').innerText = totalKM > 0 ? `R$ ${(liquidoReal/totalKM).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('avg-liq-day').innerText = `R$ ${(liquidoReal/daysCount).toFixed(2)}`; 
+    document.getElementById('avg-liq-run').innerText = `R$ ${(liquidoReal/runs).toFixed(2)}`; 
+    document.getElementById('avg-liq-hour').innerText = totalH > 0 ? `R$ ${(liquidoReal/totalH).toFixed(2)}` : 'R$ 0,00'; 
 
-        function saveGoal() {
-            db.meta = parseFloat(document.getElementById('goal-input').value) || 0;
-            localStorage.setItem('driveflow_v9', JSON.stringify(db));
-            closeModal('goal'); updateAllData();
-        }
+    const perc = Math.min((liquidoReal / db.meta) * 100, 100); 
+    document.getElementById('progress-bar').style.width = Math.max(perc, 0) + '%'; 
+    document.getElementById('goal-percent').innerText = Math.round(perc) + '%'; 
+    document.getElementById('goal-value-display').innerText = `Alvo: R$ ${db.meta.toLocaleString()}`; 
 
-        function openModalGoal() { document.getElementById('goal-input').value = db.meta; document.getElementById('modal-goal').classList.replace('hidden', 'flex'); }
+    updateCharts(filtered, daysCount); 
+    document.getElementById('history-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(i => ` 
+        <div onclick="openModalEntry(${i.id})" class="glass-card p-5 flex justify-between items-center border-l-[8px] ${categories[i.type].isGain ? 'border-emerald-500' : 'border-rose-500'}"> 
+            <div> 
+                <p class="label-micro">${i.date.split('-').reverse().join('/')}</p> 
+                <p class="text-lg font-black uppercase italic">${categories[i.type].icon} ${categories[i.type].label}</p> 
+            </div> 
+            <div class="text-right"> 
+                <p class="text-xl font-black ${categories[i.type].isGain ? 'text-emerald-400' : 'text-rose-400'}"> 
+                    ${categories[i.type].isGain ? '+' : '-'} R$ ${i.value.toFixed(2)} 
+                </p> 
+            </div> 
+        </div>`).join(''); 
+} 
 
-        function initDates() {
-            const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const today = now.toISOString().split('T')[0];
-            document.getElementById('date-start').value = firstDay;
-            document.getElementById('date-end').value = today;
-            document.getElementById('display-date').innerText = now.toLocaleString('pt-br', {month:'long', year:'numeric'});
-        }
+function updateCharts(filtered, diff) { 
+    const g = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
+    const e = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
+    myPieDash.data.datasets[0].data = [g || 1, e]; 
+    myPieDash.update(); 
+    
+    const labels = [...new Set(filtered.map(i => i.date))].sort();
+    if (labels.length > 0) {
+        document.getElementById('category-charts').classList.remove('hidden');
+        const dataGains = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
+        const dataExp = labels.map(l => filtered.filter(i => i.date === l && !categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
+        const dataLine = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
 
-        function exportToPDF() {
-            const element = document.getElementById('printable-report');
-            html2pdf().set({
-                margin: 10, filename: 'Relatorio_DriveFlow.pdf',
-                html2canvas: { scale: 2, backgroundColor: '#020617' },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(element).save();
-        }
-    </script>
+        myMainChart.data.labels = labels.map(l => l.split('-').reverse().slice(0,2).join('/'));
+        myMainChart.data.datasets = [
+            { type: 'line', label: 'Demanda', data: dataLine, borderColor: '#94a3b8', borderWidth: 2, pointRadius: 3, tension: 0.1, order: 1 },
+            { label: 'Ganhos', data: dataGains, backgroundColor: '#10b981', barPercentage: 0.6, order: 2 },
+            { label: 'Gastos', data: dataExp, backgroundColor: '#f43f5e', barPercentage: 0.6, order: 2 }
+        ];
+        myMainChart.update();
+
+        const gainsMap = {}, expMap = {}; 
+        filtered.forEach(i => { if(categories[i.type].isGain) gainsMap[i.type] = (gainsMap[i.type] || 0) + i.value; else expMap[i.type] = (expMap[i.type] || 0) + i.value; }); 
+        myPieGains.data.labels = Object.keys(gainsMap).map(k => categories[k].label); 
+        myPieGains.data.datasets = [{ data: Object.values(gainsMap), backgroundColor: Object.keys(gainsMap).map(k => categories[k].color), borderWidth: 0 }]; 
+        myPieGains.update(); 
+        myPieExpenses.data.labels = Object.keys(expMap).map(k => categories[k].label); 
+        myPieExpenses.data.datasets = [{ data: Object.values(expMap), backgroundColor: Object.keys(expMap).map(k => categories[k].color), borderWidth: 0 }]; 
+        myPieExpenses.update(); 
+    }
+} 
+
+function openModalEntry(id = null) { 
+    document.getElementById('form-entry').reset(); 
+    document.getElementById('edit-id').value = id || ''; 
+    document.getElementById('btn-delete').classList.toggle('hidden', !id); 
+    if(id) { 
+        const i = db.entries.find(e => e.id == id); 
+        document.getElementById('entry-type').value = i.type; 
+        document.getElementById('entry-value').value = i.value; 
+        document.getElementById('entry-date').value = i.date; 
+        document.getElementById('gain-km').value = i.km || ''; 
+        document.getElementById('gain-hours').value = i.hours || ''; 
+        document.getElementById('gain-cons').value = i.cons || ''; 
+        document.getElementById('fuel-price').value = i.fuelPrice || ''; 
+        document.getElementById('entry-obs').value = i.obs || ''; 
+    } 
+    updateFormFields(); document.getElementById('modal-entry').classList.replace('hidden', 'flex'); 
+} 
+function closeModal(m) { document.getElementById('modal-' + m).classList.replace('flex', 'hidden'); } 
+function updateFormFields() { 
+    const t = document.getElementById('entry-type').value; 
+    document.getElementById('fields-gain').classList.toggle('hidden', !categories[t].isGain); 
+    document.getElementById('fields-fuel').classList.toggle('hidden', t !== 'fuel'); 
+} 
+document.getElementById('form-entry').onsubmit = async (e) => { 
+    e.preventDefault(); 
+    const id = document.getElementById('edit-id').value; 
+    const data = { id: id ? parseInt(id) : Date.now(), type: document.getElementById('entry-type').value, value: parseFloat(document.getElementById('entry-value').value), date: document.getElementById('entry-date').value, km: parseFloat(document.getElementById('gain-km').value) || 0, hours: parseFloat(document.getElementById('gain-hours').value) || 0, cons: parseFloat(document.getElementById('gain-cons').value) || 0, fuelPrice: parseFloat(document.getElementById('fuel-price').value) || 0, obs: document.getElementById('entry-obs').value }; 
+    if(id) { const idx = db.entries.findIndex(e => e.id == id); db.entries[idx] = data; } else db.entries.push(data); 
+    localStorage.setItem('driveflow_v9', JSON.stringify(db)); 
+    if(window.db_cloud) { try { await setDoc(doc(window.db_cloud, "entries", data.id.toString()), data); } catch(err) { console.error("Erro Nuvem:", err); } } 
+    closeModal('entry'); updateAllData(); 
+}; 
+function deleteEntry() { if(confirm('Excluir este registro?')) { db.entries = db.entries.filter(e => e.id != document.getElementById('edit-id').value); localStorage.setItem('driveflow_v9', JSON.stringify(db)); closeModal('entry'); updateAllData(); } } 
+function saveGoal() { db.meta = parseFloat(document.getElementById('goal-input').value) || 0; localStorage.setItem('driveflow_v9', JSON.stringify(db)); closeModal('goal'); updateAllData(); } 
+function openModalGoal() { document.getElementById('goal-input').value = db.meta; document.getElementById('modal-goal').classList.replace('hidden', 'flex'); } 
+function initDates() { 
+    const now = new Date(); 
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]; 
+    const today = now.toISOString().split('T')[0]; 
+    document.getElementById('date-start').value = firstDay; 
+    document.getElementById('date-end').value = today; 
+    document.getElementById('display-date').innerText = now.toLocaleString('pt-br', {month:'long', year:'numeric'}); 
+} 
+function exportToPDF() { 
+    const element = document.getElementById('printable-report'); 
+    html2pdf().set({ margin: 10, filename: 'DriveFlow_Relatorio.pdf', html2canvas: { scale: 2, backgroundColor: '#020617' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save(); 
+} 
+</script>
 </body>
 </html>
