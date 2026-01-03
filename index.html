@@ -3,298 +3,527 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DriverFinance Elite - Dark Mode</title>
+    <title>DriveFlow - Ultra Premium Pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        body { background-color: #0f172a; color: #f8fafc; padding-bottom: 90px; font-family: sans-serif; }
-        .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 1.5rem; }
-        .input-field { 
-            background-color: #334155; border: 1px solid #475569; color: white;
-            border-radius: 0.75rem; padding: 0.8rem; width: 100%; outline: none;
+        :root { --bg-dark: #020617; }
+        body { 
+            background-color: var(--bg-dark); color: #f1f5f9; 
+            font-family: 'Inter', sans-serif; overflow-x: hidden; font-size: 1.2rem;
         }
-        .input-field:focus { border-color: #818cf8; }
-        .btn-primary { 
-            font-weight: bold; padding: 1rem; border-radius: 1rem; 
-            transition: all 0.2s; cursor: pointer; width: 100%; text-align: center;
+        .glass-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .btn-primary:active { transform: scale(0.95); }
-        .nav-item { text-align: center; color: #64748b; flex: 1; transition: 0.3s; cursor: pointer; }
-        .nav-item.active { color: #818cf8; }
-        .tab-content { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .filter-container { padding: 1.5rem; border-radius: 2rem; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.1); }
+        .filter-input { background: transparent; color: white; font-weight: 800; font-size: 1.3rem; outline: none; width: 100%; text-align: center; }
+
+        .label-micro { font-size: 0.85rem; font-weight: 900; letter-spacing: 0.2em; color: #64748b; text-transform: uppercase; }
+        .value-huge { font-size: 3.2rem; font-weight: 900; line-height: 1; }
+        
+        .report-row { display: flex; justify-content: space-between; padding: 1.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .report-val { font-weight: 900; font-size: 1.4rem; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInUp 0.6s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .nav-icon-container { padding: 14px; border-radius: 1.5rem; transition: all 0.3s; }
+        .active-nav-dash { background: rgba(16, 185, 129, 0.15); color: #10b981; filter: drop-shadow(0 0 10px #10b981); }
+        .active-nav-input { background: rgba(99, 102, 241, 0.15); color: #818cf8; filter: drop-shadow(0 0 10px #818cf8); }
+        .active-nav-report { background: rgba(251, 113, 133, 0.15); color: #fb7185; filter: drop-shadow(0 0 10px #fb7185); }
+
+        .input-field {
+            background: #1e293b; border: 2px solid #334155; border-radius: 1.8rem;
+            padding: 1.5rem; width: 100%; color: white; outline: none; font-size: 1.4rem;
+        }
     </style>
 </head>
-<body>
+<body class="pb-44">
 
-    <header class="p-6 bg-slate-900 border-b border-slate-800 mb-4 sticky top-0 z-10">
-        <div class="flex justify-between items-center">
+    <header class="p-8 sticky top-0 bg-[#020617]/95 backdrop-blur-3xl z-50 border-b border-white/5">
+        <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-2xl font-black text-indigo-400">DriverFinance</h1>
-                <p class="text-[10px] text-slate-400 uppercase tracking-widest">Controle Diário Profissional</p>
+                <h1 class="text-5xl font-black tracking-tighter italic">Drive<span class="text-emerald-400">Flow</span></h1>
+                <p id="display-date" class="label-micro text-emerald-400 mt-2"></p>
             </div>
-            <div class="text-right">
-                <span class="text-[10px] uppercase text-slate-500">Saldo Líquido</span>
-                <p class="text-xl font-bold text-emerald-400" id="dash-net-profit">R$ 0,00</p>
+            <div class="glass-card px-8 py-4 text-right">
+                <span class="label-micro text-emerald-400">Líquido Caixa</span>
+                <p class="text-4xl font-black text-emerald-400" id="dash-net-profit">R$ 0</p>
             </div>
+        </div>
+        
+        <div class="filter-container flex items-center gap-4">
+            <input type="date" id="date-start" class="filter-input" onchange="updateAllData()">
+            <span class="text-slate-600 font-bold">➜</span>
+            <input type="date" id="date-end" class="filter-input" onchange="updateAllData()">
         </div>
     </header>
 
-    <main class="p-4 max-w-md mx-auto">
-        
-        <section id="tab-dashboard" class="tab-content">
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="card p-4">
-                    <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total Bruto</p>
-                    <h2 class="text-xl font-bold text-emerald-400" id="dash-total-gains">R$ 0,00</h2>
+    <main class="px-8 space-y-12">
+        <section id="tab-dashboard" class="tab-content active space-y-12">
+            <div class="glass-card p-10 border-t-8 border-emerald-500">
+                <div class="flex justify-between items-end mb-8">
+                    <div><h3 class="text-2xl font-bold">Meta do Mês</h3><p class="label-micro" id="goal-value-display"></p></div>
+                    <span id="goal-percent" class="text-6xl font-black italic">0%</span>
                 </div>
-                <div class="card p-4">
-                    <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total Gastos</p>
-                    <h2 class="text-xl font-bold text-red-400" id="dash-total-expenses">R$ 0,00</h2>
+                <div class="h-6 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-emerald-500 shadow-[0_0_20px_#10b981] transition-all duration-1000"></div>
                 </div>
             </div>
 
-            <div class="card p-5 mb-6">
-                <h3 class="text-sm font-bold mb-4 flex justify-between">
-                    Resumo Financeiro <span class="text-indigo-400">●</span>
+            <div class="glass-card p-10">
+                <h3 class="label-micro mb-8 text-center">Balanço Financeiro</h3>
+                <div style="height: 300px;"><canvas id="chartPieDash"></canvas></div>
+            </div>
+
+            <section class="grid grid-cols-1 gap-8">
+                <div class="glass-card p-10 border-l-[18px] border-emerald-500 flex justify-between items-center">
+                    <span class="label-micro">Ganhos Brutos</span>
+                    <span class="value-huge text-emerald-400" id="ind-gain">R$ 0</span>
+                </div>
+                <div class="glass-card p-10 border-l-[18px] border-rose-500 flex justify-between items-center text-right">
+                    <span class="label-micro">Gastos Totais</span>
+                    <span class="value-huge text-rose-400" id="ind-expense">R$ 0</span>
+                </div>
+            </section>
+
+            <section class="glass-card p-10 bg-emerald-500/5 border-emerald-500/20">
+                <h3 class="label-micro mb-8 text-emerald-400 flex items-center gap-3 text-lg">
+                    <span class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></span> Performance Rápida
                 </h3>
-                <canvas id="mainChart" style="max-height: 220px;"></canvas>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2">
-                <div class="card p-3 text-center">
-                    <p class="text-[9px] text-slate-400 uppercase">Corridas</p>
-                    <p class="font-bold" id="dash-trips">0</p>
+                <div class="grid grid-cols-1 gap-8">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-6">
+                        <span class="label-micro">R$ por KM</span>
+                        <span class="text-4xl font-black text-indigo-400" id="perf-km">0</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-6">
+                        <span class="label-micro">R$ por Hora</span>
+                        <span class="text-4xl font-black text-emerald-400" id="perf-hour">0</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-6">
+                        <span class="label-micro">Custo por Hora</span>
+                        <span class="text-4xl font-black text-rose-400" id="perf-cost-hour">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="label-micro">Margem Real</span>
+                        <span class="text-4xl font-black text-emerald-400" id="perf-margin">0%</span>
+                    </div>
                 </div>
-                <div class="card p-3 text-center">
-                    <p class="text-[9px] text-slate-400 uppercase">KM Total</p>
-                    <p class="font-bold" id="dash-km">0</p>
-                </div>
-                <div class="card p-3 text-center">
-                    <p class="text-[9px] text-slate-400 uppercase">R$/Hora</p>
-                    <p class="font-bold" id="dash-per-hour">0.00</p>
-                </div>
-            </div>
+            </section>
         </section>
 
-        <section id="tab-input" class="tab-content hidden space-y-4">
-            <div class="card p-6 border-l-4 border-emerald-500">
-                <h3 class="font-bold text-emerald-400 mb-4 flex items-center">
-                    <span class="mr-2">📅</span> Fechamento do Dia
-                </h3>
-                <form id="form-gain" class="space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="date" class="input-field" required id="gain-date">
-                        <input type="number" step="0.01" placeholder="Ganho Total (R$)" class="input-field" required id="gain-value">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" placeholder="Qtd Corridas" class="input-field" required id="gain-trips">
-                        <input type="number" placeholder="KM Total Dia" class="input-field" required id="gain-km">
-                    </div>
-                    <input type="number" step="0.1" placeholder="Horas Trabalhadas" class="input-field" required id="gain-hours">
-                    <button type="submit" class="btn-primary bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20">Salvar Dia</button>
-                </form>
-            </div>
-
-            <div class="card p-6 border-l-4 border-red-500">
-                <h3 class="font-bold text-red-400 mb-4 flex items-center">
-                    <span class="mr-2">⛽</span> Nova Despesa
-                </h3>
-                <form id="form-expense" class="space-y-3">
-                    <select class="input-field" id="exp-name">
-                        <option value="Combustível">Combustível</option>
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Manutenção">Manutenção</option>
-                        <option value="Outros">Outros</option>
-                    </select>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" step="0.01" placeholder="Valor (R$)" class="input-field" required id="exp-value">
-                        <input type="date" class="input-field" required id="exp-date">
-                    </div>
-                    <input type="number" step="0.001" placeholder="Preço por Litro (Se combustível)" class="input-field" id="exp-liter">
-                    <button type="submit" class="btn-primary bg-red-600 hover:bg-red-500 shadow-lg shadow-red-900/20">Salvar Gasto</button>
-                </form>
-            </div>
-        </section>
-
-        <section id="tab-reports" class="tab-content hidden space-y-6">
-            <div class="flex gap-2 mb-4">
-                <button onclick="exportToCSV()" class="btn-primary bg-slate-700 flex items-center justify-center gap-2 text-sm">
-                    <span>📥</span> Exportar para Excel
+        <section id="tab-input" class="tab-content space-y-8">
+            <div class="grid grid-cols-1 gap-8 pt-4">
+                <button onclick="openModalEntry()" class="glass-card p-12 border-b-8 border-emerald-500 flex justify-between items-center active:scale-95 transition-all">
+                    <div class="text-left"><p class="text-4xl font-black italic uppercase">Novo Lançamento</p><p class="label-micro">Clique para registrar</p></div>
+                    <span class="text-6xl">💰</span>
+                </button>
+                <button onclick="openModalGoal()" class="glass-card p-12 border-b-8 border-indigo-500 flex justify-between items-center active:scale-95 transition-all">
+                    <div class="text-left"><p class="text-4xl font-black italic uppercase">Meta Mensal</p><p class="label-micro">Definir objetivo</p></div>
+                    <span class="text-6xl">🎯</span>
                 </button>
             </div>
+            <div id="history-list" class="space-y-6 pt-6"></div>
+        </section>
 
-            <div class="card p-4">
-                <h3 class="text-xs font-bold text-slate-400 uppercase mb-4">Lucratividade Semanal</h3>
-                <canvas id="lineChart"></canvas>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div class="card p-4">
-                    <p class="text-[10px] text-slate-400 uppercase">Média R$/KM</p>
-                    <p class="text-xl font-bold text-indigo-400" id="rep-gain-km">0.00</p>
+        <section id="tab-reports" class="tab-content space-y-12">
+            <div id="printable-report" class="space-y-10">
+                <h2 class="text-4xl font-black italic uppercase text-center">Relatório Geral</h2>
+                <div id="main-chart-container" class="glass-card p-10">
+                    <h3 id="main-chart-title" class="label-micro mb-8">Faturamento</h3>
+                    <div style="height: 400px;"><canvas id="chartMainReport"></canvas></div>
                 </div>
-                <div class="card p-4">
-                    <p class="text-[10px] text-slate-400 uppercase">Custo/KM</p>
-                    <p class="text-xl font-bold text-red-400" id="rep-cost-km">0.00</p>
-                </div>
-            </div>
-
-            <div class="card p-4 overflow-hidden">
-                <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">Últimos Lançamentos</h3>
-                <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 text-sm">
+                <div id="category-charts" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+                    <div class="glass-card p-10">
+                        <h3 class="label-micro mb-8 text-center">Ganhos por Categoria</h3>
+                        <div style="height: 300px;"><canvas id="chartPieGains"></canvas></div>
                     </div>
+                    <div class="glass-card p-10">
+                        <h3 class="label-micro mb-8 text-center">Gastos por Categoria</h3>
+                        <div style="height: 300px;"><canvas id="chartPieExpenses"></canvas></div>
+                    </div>
+                </div>
+                <div class="glass-card p-10 space-y-4">
+                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Financeiro Detalhado</h3>
+                    <div class="report-row"><span>Ganhos Totais</span><span class="report-val text-emerald-400" id="rep-total-gain">R$ 0</span></div>
+                    <div class="report-row"><span>Despesas Lançadas</span><span class="report-val text-rose-400" id="rep-total-loss">R$ 0</span></div>
+                    <div class="report-row"><span>Gasto Combustível (Est.)</span><span class="report-val text-orange-400" id="rep-fuel-est">R$ 0</span></div>
+                    <div class="report-row pt-6 border-t-4 border-slate-700">
+                        <span class="font-black text-2xl">LUCRO LÍQUIDO</span>
+                        <span class="report-val text-emerald-400 text-4xl" id="rep-net">R$ 0</span>
+                    </div>
+                </div>
+                <div class="glass-card p-10 space-y-4">
+                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Métricas de Trabalho</h3>
+                    <div class="report-row"><span>Dias Trabalhados</span><span class="report-val" id="rep-days">0</span></div>
+                    <div class="report-row"><span>Distância Total</span><span class="report-val" id="rep-km">0 km</span></div>
+                    <div class="report-row"><span>Horas Operação</span><span class="report-val" id="rep-hours">0h</span></div>
+                    <div class="report-row"><span>Distância Média / Dia</span><span class="report-val text-blue-400" id="rep-avg-dist-day">0 km</span></div>
+                </div>
+                <div class="glass-card p-10 space-y-4">
+                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Médias Brutas (Faturamento)</h3>
+                    <div class="report-row"><span>Média R$ / KM</span><span class="report-val text-emerald-400" id="avg-bruto-km">R$ 0</span></div>
+                    <div class="report-row"><span>Média R$ / Dia</span><span class="report-val text-emerald-400" id="avg-bruto-day">R$ 0</span></div>
+                    <div class="report-row"><span>Média R$ / Corrida</span><span class="report-val text-emerald-400" id="avg-bruto-run">R$ 0</span></div>
+                    <div class="report-row"><span>Média R$ / Hora</span><span class="report-val text-emerald-400" id="avg-bruto-hour">R$ 0</span></div>
+                </div>
+                <div class="glass-card p-10 space-y-4">
+                    <h3 class="label-micro mb-6 border-b border-white/10 pb-4 text-xl">Médias Líquidas (Lucro)</h3>
+                    <div class="report-row"><span>Lucro Médio / KM</span><span class="report-val text-emerald-500" id="avg-liq-km">R$ 0</span></div>
+                    <div class="report-row"><span>Lucro Médio / Dia</span><span class="report-val text-emerald-500" id="avg-liq-day">R$ 0</span></div>
+                    <div class="report-row"><span>Lucro Médio / Corrida</span><span class="report-val text-emerald-500" id="avg-liq-run">R$ 0</span></div>
+                    <div class="report-row"><span>Lucro Médio / Hora</span><span class="report-val text-emerald-500" id="avg-liq-hour">R$ 0</span></div>
+                </div>
             </div>
+            <button onclick="exportToPDF()" class="w-full glass-card p-12 bg-rose-600/20 border-b-8 border-rose-500 flex items-center justify-center gap-6 active:scale-95 transition-all">
+                <span class="text-5xl">📄</span>
+                <span class="text-3xl font-black uppercase italic">Gerar PDF</span>
+            </button>
         </section>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-4 shadow-2xl z-20">
-        <div onclick="showTab('dashboard')" class="nav-item active" id="nav-dashboard">
-            <span class="text-xl block">🏠</span><span class="text-[10px]">Início</span>
-        </div>
-        <div onclick="showTab('input')" class="nav-item" id="nav-input">
-            <span class="text-xl block">💰</span><span class="text-[10px]">Lançar</span>
-        </div>
-        <div onclick="showTab('reports')" class="nav-item" id="nav-reports">
-            <span class="text-xl block">📊</span><span class="text-[10px]">Relatórios</span>
-        </div>
+    <nav class="fixed bottom-0 left-0 right-0 h-32 bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-8 z-[100]">
+        <button onclick="showTab('dashboard')" id="nav-dash" class="btn-nav active-nav-dash flex flex-col items-center">
+            <div class="nav-icon-container"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>
+            <span class="label-micro">Painel</span>
+        </button>
+        <button onclick="showTab('input')" id="nav-input" class="btn-nav text-slate-500 flex flex-col items-center">
+            <div class="nav-icon-container"><svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg></div>
+            <span class="label-micro">Lançar</span>
+        </button>
+        <button onclick="showTab('reports')" id="nav-reports" class="btn-nav text-slate-500 flex flex-col items-center">
+            <div class="nav-icon-container"><svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+            <span class="label-micro">Relatórios</span>
+        </button>
     </nav>
 
-    <script>
-        // --- LOGICA DE DADOS ---
-        let localData = JSON.parse(localStorage.getItem('driver_data_v2')) || { gains: [], expenses: [] };
-        let mainChart, lineChart;
+    <div id="modal-entry" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-8">
+        <div class="glass-card w-full max-w-xl p-12">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-4xl font-black italic uppercase">Registro</h2>
+                <button onclick="deleteEntry()" id="btn-delete" class="hidden bg-rose-600 text-white px-6 py-2 rounded-2xl font-black text-xs uppercase">Excluir</button>
+            </div>
+            <form id="form-entry" class="space-y-6">
+                <input type="hidden" id="edit-id">
+                <select id="entry-type" onchange="updateFormFields()" class="input-field font-bold">
+                    <optgroup label="Ganhos">
+                        <option value="gain">📱 App (Uber/99)</option>
+                        <option value="particular">🚗 Particular</option>
+                        <option value="bonus">🎁 Bônus/Gorjeta</option>
+                    </optgroup>
+                    <optgroup label="Gastos">
+                        <option value="fuel">⛽ Abastecimento</option>
+                        <option value="maintenance">🛠️ Manutenção</option>
+                        <option value="tax">📑 Taxas/Impostos</option>
+                        <option value="expense">📉 Outros Gastos</option>
+                    </optgroup>
+                </select>
+                <input type="number" step="0.01" id="entry-value" class="input-field text-5xl h-28 text-center" placeholder="R$ 0,00" required>
+                <input type="date" id="entry-date" class="input-field" required>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initCharts();
-            updateData();
-            // Define data de hoje nos inputs
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelectorAll('input[type="date"]').forEach(i => i.value = today);
-        });
-
-        function showTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-            document.getElementById('nav-' + tab).classList.add('active');
-        }
-
-        // SALVAR GANHOS (RESUMO DO DIA)
-        document.getElementById('form-gain').onsubmit = (e) => {
-            e.preventDefault();
-            const item = { 
-                date: document.getElementById('gain-date').value, 
-                value: parseFloat(document.getElementById('gain-value').value), 
-                trips: parseInt(document.getElementById('gain-trips').value),
-                km: parseFloat(document.getElementById('gain-km').value),
-                hours: parseFloat(document.getElementById('gain-hours').value),
-                timestamp: Date.now()
-            };
-            localData.gains.push(item);
-            save();
-            e.target.reset();
-        };
-
-        // SALVAR DESPESAS
-        document.getElementById('form-expense').onsubmit = (e) => {
-            e.preventDefault();
-            const item = { 
-                name: document.getElementById('exp-name').value,
-                value: parseFloat(document.getElementById('exp-value').value), 
-                date: document.getElementById('exp-date').value,
-                literPrice: document.getElementById('exp-liter').value || 0,
-                timestamp: Date.now()
-            };
-            localData.expenses.push(item);
-            save();
-            e.target.reset();
-        };
-
-        function save() {
-            localStorage.setItem('driver_data_v2', JSON.stringify(localData));
-            alert("✅ Dados salvos com sucesso!");
-            updateData();
-        }
-
-        function updateData() {
-            const g = localData.gains;
-            const e = localData.expenses;
-
-            const totalG = g.reduce((a, b) => a + b.value, 0);
-            const totalE = e.reduce((a, b) => a + b.value, 0);
-            const totalKM = g.reduce((a, b) => a + b.km, 0);
-            const totalTrips = g.reduce((a, b) => a + b.trips, 0);
-            const totalHours = g.reduce((a, b) => a + b.hours, 0);
-
-            document.getElementById('dash-total-gains').innerText = `R$ ${totalG.toLocaleString()}`;
-            document.getElementById('dash-total-expenses').innerText = `R$ ${totalE.toLocaleString()}`;
-            document.getElementById('dash-net-profit').innerText = `R$ ${(totalG - totalE).toLocaleString()}`;
-            document.getElementById('dash-trips').innerText = totalTrips;
-            document.getElementById('dash-km').innerText = totalKM;
-            document.getElementById('dash-per-hour').innerText = totalHours > 0 ? (totalG / totalHours).toFixed(2) : "0.00";
-            
-            document.getElementById('rep-gain-km').innerText = totalKM > 0 ? (totalG / totalKM).toFixed(2) : "0.00";
-            document.getElementById('rep-cost-km').innerText = totalKM > 0 ? (totalE / totalKM).toFixed(2) : "0.00";
-
-            renderHistory();
-            updateCharts(totalG, totalE);
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = "";
-            const all = [...localData.gains, ...localData.expenses].sort((a,b) => b.timestamp - a.timestamp);
-            
-            all.slice(0, 10).forEach(item => {
-                const isGain = !!item.trips;
-                list.innerHTML += `
-                    <div class="flex justify-between p-2 border-b border-slate-700">
-                        <span>${item.date.split('-').reverse().slice(0,2).join('/')} - ${isGain ? '💰 Dia' : '⛽ ' + item.name}</span>
-                        <span class="${isGain ? 'text-emerald-400' : 'text-red-400'}">R$ ${item.value.toFixed(2)}</span>
+                <div id="fields-gain" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="number" id="gain-km" class="input-field" placeholder="KM">
+                        <input type="number" step="0.1" id="gain-hours" class="input-field" placeholder="Horas">
                     </div>
-                `;
-            });
+                    <input type="number" step="0.1" id="gain-cons" class="input-field" placeholder="Consumo Médio (KM/L)">
+                </div>
+
+                <div id="fields-fuel" class="hidden">
+                    <input type="number" step="0.001" id="fuel-price" class="input-field" placeholder="Preço do Litro R$">
+                </div>
+
+                <textarea id="entry-obs" class="input-field h-32 text-lg" placeholder="Observações (opcional)..."></textarea>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closeModal('entry')" class="flex-1 p-8 rounded-3xl bg-slate-800 font-black text-xl">FECHAR</button>
+                    <button type="submit" class="flex-[2] p-8 rounded-3xl bg-emerald-600 font-black text-xl shadow-lg shadow-emerald-900/20">GRAVAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-goal" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-8">
+        <div class="glass-card w-full max-w-sm p-12 text-center">
+            <h2 class="text-3xl font-black italic mb-10 uppercase text-emerald-400">Meta Mensal</h2>
+            <input type="number" id="goal-input" class="input-field text-center text-4xl font-black mb-10">
+            <button onclick="saveGoal()" class="w-full p-8 rounded-3xl bg-emerald-600 font-black text-xl uppercase">Salvar Alvo</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ==========================================
+        // COLOQUE SUAS CHAVES DO FIREBASE AQUI:
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ",
+            authDomain: "driveflow-49296.firebaseapp.com",
+            projectId: "driveflow-49296",
+            storageBucket: "driveflow-49296.firebasestorage.app",
+            messagingSenderId: "1067278316892",
+            appId: "1:1067278316892:web:e72e316200e7379e9f7d99"
+        };
+
+        // Inicialização Segura (Se as chaves não forem alteradas, ele não tenta conectar)
+        if(firebaseConfig.apiKey !== "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ") {
+            const app = initializeApp(firebaseConfig);
+            window.db_cloud = getFirestore(app);
+            console.log("Firebase Conectado");
+        }
+    </script>
+
+    <script>
+        let myMainChart, myPieDash, myPieGains, myPieExpenses;
+        let db = JSON.parse(localStorage.getItem('driveflow_v9')) || { entries: [], meta: 5000 };
+        
+        const categories = {
+            gain: { label: 'App', icon: '📱', isGain: true, color: '#10b981' },
+            particular: { label: 'Particular', icon: '🚗', isGain: true, color: '#34d399' },
+            bonus: { label: 'Bônus', icon: '🎁', isGain: true, color: '#6ee7b7' },
+            fuel: { label: 'Gasolina', icon: '⛽', isGain: false, color: '#f43f5e' },
+            maintenance: { label: 'Manutenção', icon: '🛠️', isGain: false, color: '#f97316' },
+            tax: { label: 'Taxas', icon: '📑', isGain: false, color: '#f59e0b' },
+            expense: { label: 'Gastos', icon: '📉', isGain: false, color: '#fb7185' }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => { initDates(); initCharts(); updateAllData(); });
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            document.querySelectorAll('.btn-nav').forEach(b => b.className = 'btn-nav text-slate-500 flex flex-col items-center');
+            
+            const activeClass = id === 'dashboard' ? 'active-nav-dash' : id === 'input' ? 'active-nav-input' : 'active-nav-report';
+            document.getElementById('nav-' + (id==='reports'?'reports':id==='dashboard'?'dash':'input')).className = `btn-nav ${activeClass} flex flex-col items-center`;
+        }
+
+        function updateAllData() {
+            const startStr = document.getElementById('date-start').value;
+            const endStr = document.getElementById('date-end').value;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            const filtered = db.entries.filter(i => i.date >= startStr && i.date <= endStr);
+
+            const totalG = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
+            const totalE = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
+            const totalKM = filtered.reduce((a,b) => a + (b.km || 0), 0);
+            const totalH = filtered.reduce((a,b) => a + (b.hours || 0), 0);
+            const runs = filtered.filter(i => categories[i.type].isGain).length || 1;
+            const daysCount = [...new Set(filtered.map(i => i.date))].length || 1;
+            
+            const liquidoReal = totalG - totalE;
+            const lastPrice = filtered.filter(i => i.type === 'fuel').reverse()[0]?.fuelPrice || 5.80;
+            const fuelEst = filtered.filter(i => categories[i.type].isGain && i.cons > 0).reduce((a,b) => a + ((b.km/b.cons) * lastPrice), 0);
+
+            document.getElementById('dash-net-profit').innerText = `R$ ${liquidoReal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+            document.getElementById('ind-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR')}`;
+            document.getElementById('ind-expense').innerText = `R$ ${totalE.toLocaleString('pt-BR')}`;
+            
+            document.getElementById('perf-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00';
+            document.getElementById('perf-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00';
+            document.getElementById('perf-cost-hour').innerText = totalH > 0 ? `R$ ${(totalE/totalH).toFixed(2)}` : 'R$ 0,00';
+            document.getElementById('perf-margin').innerText = totalG > 0 ? ((liquidoReal/totalG)*100).toFixed(0) + '%' : '0%';
+
+            document.getElementById('rep-total-gain').innerText = `R$ ${totalG.toFixed(2)}`;
+            document.getElementById('rep-total-loss').innerText = `R$ ${totalE.toFixed(2)}`;
+            document.getElementById('rep-fuel-est').innerText = `R$ ${fuelEst.toFixed(2)}`;
+            document.getElementById('rep-net').innerText = `R$ ${liquidoReal.toFixed(2)}`;
+            document.getElementById('rep-days').innerText = daysCount;
+            document.getElementById('rep-km').innerText = totalKM.toFixed(1) + ' km';
+            document.getElementById('rep-hours').innerText = totalH.toFixed(1) + 'h';
+            document.getElementById('rep-avg-dist-day').innerText = (totalKM / daysCount).toFixed(1) + ' km';
+
+            document.getElementById('avg-bruto-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00';
+            document.getElementById('avg-bruto-day').innerText = `R$ ${(totalG/daysCount).toFixed(2)}`;
+            document.getElementById('avg-bruto-run').innerText = `R$ ${(totalG/runs).toFixed(2)}`;
+            document.getElementById('avg-bruto-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00';
+
+            document.getElementById('avg-liq-km').innerText = totalKM > 0 ? `R$ ${(liquidoReal/totalKM).toFixed(2)}` : 'R$ 0,00';
+            document.getElementById('avg-liq-day').innerText = `R$ ${(liquidoReal/daysCount).toFixed(2)}`;
+            document.getElementById('avg-liq-run').innerText = `R$ ${(liquidoReal/runs).toFixed(2)}`;
+            document.getElementById('avg-liq-hour').innerText = totalH > 0 ? `R$ ${(liquidoReal/totalH).toFixed(2)}` : 'R$ 0,00';
+
+            const perc = Math.min((liquidoReal / db.meta) * 100, 100);
+            document.getElementById('progress-bar').style.width = Math.max(perc, 0) + '%';
+            document.getElementById('goal-percent').innerText = Math.round(perc) + '%';
+            document.getElementById('goal-value-display').innerText = `Alvo: R$ ${db.meta.toLocaleString()}`;
+
+            updateCharts(filtered, diffDays);
+
+            document.getElementById('history-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(i => `
+                <div onclick="openModalEntry(${i.id})" class="glass-card p-8 flex justify-between items-center border-l-[15px] ${i.value >= 0 && categories[i.type].isGain ? 'border-emerald-500' : 'border-rose-500'}">
+                    <div>
+                        <p class="label-micro">${i.date.split('-').reverse().join('/')}</p>
+                        <p class="text-3xl font-black uppercase italic">${categories[i.type].icon} ${categories[i.type].label}</p>
+                        ${i.obs ? `<p class="text-sm opacity-40 italic mt-2 truncate max-w-[200px]">${i.obs}</p>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-black ${categories[i.type].isGain ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${categories[i.type].isGain ? '+' : '-'} R$ ${i.value.toFixed(2)}
+                        </p>
+                    </div>
+                </div>`).join('');
         }
 
         function initCharts() {
-            mainChart = new Chart(document.getElementById('mainChart'), {
+            const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+            myPieDash = new Chart(document.getElementById('chartPieDash'), {
                 type: 'doughnut',
-                data: { labels: ['Lucro', 'Gastos'], datasets: [{ data: [1, 1], backgroundColor: ['#818cf8', '#ef4444'], borderWidth: 0 }] },
-                options: { plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+                data: { labels: ['Ganhos', 'Gastos'], datasets: [{ data: [1, 0], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] },
+                options: chartOptions
             });
-
-            lineChart = new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: { labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'], datasets: [{ label: 'R$ Líquido', data: [0,0,0,0,0,0,0], borderColor: '#818cf8', tension: 0.3 }] },
-                options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#64748b' } }, y: { grid: { color: '#334155' }, ticks: { color: '#64748b' } } } }
+            myMainChart = new Chart(document.getElementById('chartMainReport'), {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: chartOptions
             });
+            const pieOpt = { ...chartOptions, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff' } } } };
+            myPieGains = new Chart(document.getElementById('chartPieGains'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt });
+            myPieExpenses = new Chart(document.getElementById('chartPieExpenses'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt });
         }
 
-        function updateCharts(g, e) {
-            mainChart.data.datasets[0].data = [g - e, e];
-            mainChart.update();
+        function updateCharts(filtered, diff) {
+            const g = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
+            const e = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0);
+            myPieDash.data.datasets[0].data = [g || 1, e];
+            myPieDash.update();
+
+            const title = document.getElementById('main-chart-title');
+            const categorySection = document.getElementById('category-charts');
             
-            // Simulação simples de linha temporal
-            lineChart.data.datasets[0].data = localData.gains.slice(-7).map(x => x.value);
-            lineChart.update();
+            if (diff === 1) {
+                title.innerText = "Detalhamento do Dia";
+                categorySection.classList.add('hidden');
+                const dataMap = {};
+                filtered.forEach(i => dataMap[i.type] = (dataMap[i.type] || 0) + i.value);
+                myMainChart.config.type = 'bar';
+                myMainChart.data.labels = Object.keys(dataMap).map(k => categories[k].label);
+                myMainChart.data.datasets = [{ data: Object.values(dataMap), backgroundColor: Object.keys(dataMap).map(k => categories[k].color), borderRadius: 10 }];
+            } else {
+                categorySection.classList.remove('hidden');
+                title.innerText = diff <= 7 ? "Faturamento Semanal" : "Faturamento Mensal";
+                const labels = [...new Set(filtered.map(i => i.date))].sort();
+                const datasetG = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
+                myMainChart.config.type = 'bar';
+                myMainChart.data.labels = labels.map(l => l.split('-').reverse().slice(0,2).join('/'));
+                myMainChart.data.datasets = [{ label: 'Ganhos', data: datasetG, backgroundColor: '#10b981', borderRadius: 8 }];
+
+                const gainsMap = {}, expMap = {};
+                filtered.forEach(i => {
+                    if(categories[i.type].isGain) gainsMap[i.type] = (gainsMap[i.type] || 0) + i.value;
+                    else expMap[i.type] = (expMap[i.type] || 0) + i.value;
+                });
+                myPieGains.data.labels = Object.keys(gainsMap).map(k => categories[k].label);
+                myPieGains.data.datasets = [{ data: Object.values(gainsMap), backgroundColor: Object.keys(gainsMap).map(k => categories[k].color), borderWidth: 0 }];
+                myPieGains.update();
+                myPieExpenses.data.labels = Object.keys(expMap).map(k => categories[k].label);
+                myPieExpenses.data.datasets = [{ data: Object.values(expMap), backgroundColor: Object.keys(expMap).map(k => categories[k].color), borderWidth: 0 }];
+                myPieExpenses.update();
+            }
+            myMainChart.update();
         }
 
-        function exportToCSV() {
-            let csv = "Data,Tipo,Valor,KM,Corridas,Horas\n";
-            localData.gains.forEach(i => csv += `${i.date},Ganho,${i.value},${i.km},${i.trips},${i.hours}\n`);
-            localData.expenses.forEach(i => csv += `${i.date},Gasto,${i.value},,, \n`);
+        function openModalEntry(id = null) {
+            document.getElementById('form-entry').reset();
+            document.getElementById('edit-id').value = id || '';
+            document.getElementById('btn-delete').classList.toggle('hidden', !id);
+            if(id) {
+                const i = db.entries.find(e => e.id == id);
+                document.getElementById('entry-type').value = i.type;
+                document.getElementById('entry-value').value = i.value;
+                document.getElementById('entry-date').value = i.date;
+                document.getElementById('gain-km').value = i.km || '';
+                document.getElementById('gain-hours').value = i.hours || '';
+                document.getElementById('gain-cons').value = i.cons || '';
+                document.getElementById('fuel-price').value = i.fuelPrice || '';
+                document.getElementById('entry-obs').value = i.obs || '';
+            }
+            updateFormFields();
+            document.getElementById('modal-entry').classList.replace('hidden', 'flex');
+        }
+
+        function closeModal(m) { document.getElementById('modal-' + m).classList.replace('flex', 'hidden'); }
+        function updateFormFields() {
+            const t = document.getElementById('entry-type').value;
+            document.getElementById('fields-gain').classList.toggle('hidden', !categories[t].isGain);
+            document.getElementById('fields-fuel').classList.toggle('hidden', t !== 'fuel');
+        }
+
+        document.getElementById('form-entry').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const data = {
+                id: id ? parseInt(id) : Date.now(),
+                type: document.getElementById('entry-type').value,
+                value: parseFloat(document.getElementById('entry-value').value),
+                date: document.getElementById('entry-date').value,
+                km: parseFloat(document.getElementById('gain-km').value) || 0,
+                hours: parseFloat(document.getElementById('gain-hours').value) || 0,
+                cons: parseFloat(document.getElementById('gain-cons').value) || 0,
+                fuelPrice: parseFloat(document.getElementById('fuel-price').value) || 0,
+                obs: document.getElementById('entry-obs').value
+            };
             
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'meu_financeiro_driver.csv');
-            a.click();
+            // Salva Local
+            if(id) { const idx = db.entries.findIndex(e => e.id == id); db.entries[idx] = data; }
+            else db.entries.push(data);
+            localStorage.setItem('driveflow_v9', JSON.stringify(db));
+
+            // Salva Firebase (se estiver configurado)
+            if(window.db_cloud) {
+                try {
+                    await setDoc(doc(window.db_cloud, "entries", data.id.toString()), data);
+                } catch(err) { console.error("Erro Nuvem:", err); }
+            }
+
+            closeModal('entry'); updateAllData();
+        };
+
+        function deleteEntry() {
+            if(confirm('Excluir este registro?')) {
+                db.entries = db.entries.filter(e => e.id != document.getElementById('edit-id').value);
+                localStorage.setItem('driveflow_v9', JSON.stringify(db));
+                closeModal('entry'); updateAllData();
+            }
+        }
+
+        function saveGoal() {
+            db.meta = parseFloat(document.getElementById('goal-input').value) || 0;
+            localStorage.setItem('driveflow_v9', JSON.stringify(db));
+            closeModal('goal'); updateAllData();
+        }
+
+        function openModalGoal() { document.getElementById('goal-input').value = db.meta; document.getElementById('modal-goal').classList.replace('hidden', 'flex'); }
+
+        function initDates() {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const today = now.toISOString().split('T')[0];
+            document.getElementById('date-start').value = firstDay;
+            document.getElementById('date-end').value = today;
+            document.getElementById('display-date').innerText = now.toLocaleString('pt-br', {month:'long', year:'numeric'});
+        }
+
+        function exportToPDF() {
+            const element = document.getElementById('printable-report');
+            html2pdf().set({
+                margin: 10, filename: 'Relatorio_DriveFlow.pdf',
+                html2canvas: { scale: 2, backgroundColor: '#020617' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(element).save();
         }
     </script>
 </body>
