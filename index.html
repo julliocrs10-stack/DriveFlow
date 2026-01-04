@@ -22,7 +22,8 @@
     .report-row { display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); } 
     .report-val { font-weight: 900; font-size: 1.1rem; } 
 
-    .tab-content { display: none; margin-bottom: 140px; } 
+    main { padding-bottom: 140px; } 
+    .tab-content { display: none; } 
     .tab-content.active { display: block; animation: fadeInUp 0.4s ease-out forwards; } 
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } } 
@@ -49,9 +50,9 @@
         </div> 
     </div> 
     <div class="filter-container flex items-center gap-2"> 
-        <input type="date" id="date-start" class="filter-input" onchange="updateAllData()"> 
+        <input type="date" id="date-start" class="filter-input" onchange="window.updateAllData()"> 
         <span class="text-slate-600 font-bold">➜</span> 
-        <input type="date" id="date-end" class="filter-input" onchange="updateAllData()"> 
+        <input type="date" id="date-end" class="filter-input" onchange="window.updateAllData()"> 
     </div> 
 </header> 
 
@@ -59,8 +60,8 @@
     <section id="tab-dashboard" class="tab-content active space-y-6"> 
         <div class="glass-card p-6 border-t-4 border-emerald-500"> 
             <div class="flex justify-between items-end mb-4"> 
-                <div><h3 class="text-lg font-bold">Meta do Mês</h3><p class="label-micro" id="goal-value-display"></p></div> 
-                <span id="goal-percent" class="text-3xl font-black italic">0%</span> 
+                <div><h3 class="text-lg font-bold text-white">Meta do Mês</h3><p class="label-micro" id="goal-value-display"></p></div> 
+                <span id="goal-percent" class="text-3xl font-black italic text-emerald-400">0%</span> 
             </div> 
             <div class="h-3 bg-slate-800 rounded-full overflow-hidden"> 
                 <div id="progress-bar" class="h-full bg-emerald-500 shadow-[0_0_15px_#10b981] transition-all duration-1000"></div> 
@@ -96,10 +97,6 @@
                     <span class="label-micro">R$ por Hora</span> 
                     <span class="text-2xl font-black text-emerald-400" id="perf-hour">0</span> 
                 </div> 
-                <div class="flex justify-between items-center border-b border-white/5 pb-3"> 
-                    <span class="label-micro">Custo/Hora</span> 
-                    <span class="text-2xl font-black text-rose-400" id="perf-cost-hour">0</span> 
-                </div> 
                 <div class="flex justify-between items-center"> 
                     <span class="label-micro">Margem</span> 
                     <span class="text-2xl font-black text-emerald-400" id="perf-margin">0%</span> 
@@ -110,11 +107,11 @@
 
     <section id="tab-input" class="tab-content space-y-5"> 
         <div class="grid grid-cols-1 gap-4 pt-4"> 
-            <button onclick="openModalEntry()" class="glass-card p-6 border-b-4 border-emerald-500 flex justify-between items-center active:scale-95 transition-all"> 
+            <button onclick="window.openModalEntry()" class="glass-card p-6 border-b-4 border-emerald-500 flex justify-between items-center"> 
                 <div class="text-left"><p class="text-xl font-black italic uppercase">Novo Lançamento</p><p class="label-micro">Registrar Agora</p></div> 
                 <span class="text-3xl">💰</span> 
             </button> 
-            <button onclick="openModalGoal()" class="glass-card p-6 border-b-4 border-indigo-500 flex justify-between items-center active:scale-95 transition-all"> 
+            <button onclick="window.openModalGoal()" class="glass-card p-6 border-b-4 border-indigo-500 flex justify-between items-center"> 
                 <div class="text-left"><p class="text-xl font-black italic uppercase">Meta Mensal</p><p class="label-micro">Ajustar Alvo</p></div> 
                 <span class="text-3xl">🎯</span> 
             </button> 
@@ -123,77 +120,72 @@
     </section> 
 
     <section id="tab-reports" class="tab-content space-y-6"> 
-        <div id="printable-report" class="space-y-6"> 
-            <h2 class="text-2xl font-black italic uppercase text-center">Relatório Geral</h2> 
+        <div id="printable-report" class="space-y-6 bg-[#020617] p-2"> 
+            <h2 class="text-2xl font-black italic uppercase text-center text-white">Relatório Geral</h2> 
             
-            <div id="main-chart-container" class="glass-card p-5"> 
-                <h3 id="main-chart-title" class="label-micro mb-4">Demanda e Faturamento</h3> 
+            <div class="glass-card p-5"> 
+                <h3 class="label-micro mb-4">Demanda e Faturamento</h3> 
                 <div style="height: 250px;"><canvas id="chartMainReport"></canvas></div> 
             </div> 
 
-            <div id="category-charts" class="grid grid-cols-1 gap-4 hidden"> 
+            <div class="grid grid-cols-1 gap-4"> 
                 <div class="glass-card p-5"> 
-                    <h3 class="label-micro mb-4 text-center">Ganhos por Categoria</h3> 
+                    <h3 class="label-micro mb-4 text-center">Ganhos por Categoria (%)</h3> 
                     <div style="height: 200px;"><canvas id="chartPieGains"></canvas></div> 
                 </div> 
                 <div class="glass-card p-5"> 
-                    <h3 class="label-micro mb-4 text-center">Gastos por Categoria</h3> 
+                    <h3 class="label-micro mb-4 text-center">Gastos por Categoria (%)</h3> 
                     <div style="height: 200px;"><canvas id="chartPieExpenses"></canvas></div> 
                 </div> 
             </div> 
 
             <div class="glass-card p-6 space-y-2"> 
-                <h3 class="label-micro mb-4 border-b border-white/10 pb-2">Financeiro Detalhado</h3> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2 text-white">Financeiro Detalhado</h3> 
                 <div class="report-row"><span>Ganhos Totais</span><span class="report-val text-emerald-400" id="rep-total-gain">R$ 0</span></div> 
                 <div class="report-row"><span>Despesas Lançadas</span><span class="report-val text-rose-400" id="rep-total-loss">R$ 0</span></div> 
                 <div class="report-row"><span>Gasto Combustível (Est.)</span><span class="report-val text-orange-400" id="rep-fuel-est">R$ 0</span></div> 
                 <div class="report-row pt-4 border-t-2 border-slate-700"> 
-                    <span class="font-black">LUCRO LÍQUIDO</span> 
+                    <span class="font-black text-white">LUCRO LÍQUIDO</span> 
                     <span class="report-val text-emerald-400 text-2xl" id="rep-net">R$ 0</span> 
                 </div> 
             </div> 
 
             <div class="glass-card p-6 space-y-2"> 
-                <h3 class="label-micro mb-4 border-b border-white/10 pb-2">Métricas de Trabalho</h3> 
-                <div class="report-row"><span>Dias Trabalhados</span><span class="report-val" id="rep-days">0</span></div> 
-                <div class="report-row"><span>Distância Total</span><span class="report-val" id="rep-km">0 km</span></div> 
-                <div class="report-row"><span>Horas Operação</span><span class="report-val" id="rep-hours">0h</span></div> 
-                <div class="report-row"><span>Distância Média / Dia</span><span class="report-val text-blue-400" id="rep-avg-dist-day">0 km</span></div> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2 text-white">Métricas de Trabalho</h3> 
+                <div class="report-row"><span>Qtd Corridas</span><span class="report-val" id="rep-total-runs">0</span></div> 
+                <div class="report-row"><span>KM Total</span><span class="report-val" id="rep-km">0 km</span></div> 
+                <div class="report-row"><span>Horas Operação</span><span class="report-val" id="rep-hours">0h 00m</span></div> 
             </div>
 
             <div class="glass-card p-6 space-y-2"> 
-                <h3 class="label-micro mb-4 border-b border-white/10 pb-2">Médias Brutas</h3> 
-                <div class="report-row"><span>Média R$ / KM</span><span class="report-val text-emerald-400" id="avg-bruto-km">R$ 0</span></div> 
-                <div class="report-row"><span>Média R$ / Dia</span><span class="report-val text-emerald-400" id="avg-bruto-day">R$ 0</span></div> 
-                <div class="report-row"><span>Média R$ / Corrida</span><span class="report-val text-emerald-400" id="avg-bruto-run">R$ 0</span></div> 
-                <div class="report-row"><span>Média R$ / Hora</span><span class="report-val text-emerald-400" id="avg-bruto-hour">R$ 0</span></div> 
+                <h3 class="label-micro mb-4 border-b border-white/10 pb-2 text-white">Médias Brutas</h3> 
+                <div class="report-row"><span>R$ / KM</span><span class="report-val text-emerald-400" id="avg-bruto-km">R$ 0</span></div> 
+                <div class="report-row"><span>R$ / Dia</span><span class="report-val text-emerald-400" id="avg-bruto-day">R$ 0</span></div> 
+                <div class="report-row"><span>R$ / Corrida</span><span class="report-val text-emerald-400" id="avg-bruto-run">R$ 0</span></div> 
             </div>
 
             <div class="glass-card p-6 space-y-2 border-t-4 border-emerald-500/50"> 
                 <h3 class="label-micro mb-4 border-b border-white/10 pb-2 text-emerald-400">Médias Líquidas</h3> 
-                <div class="report-row"><span>Lucro Médio / KM</span><span class="report-val text-emerald-500" id="avg-liq-km">R$ 0</span></div> 
-                <div class="report-row"><span>Lucro Médio / Dia</span><span class="report-val text-emerald-500" id="avg-liq-day">R$ 0</span></div> 
-                <div class="report-row"><span>Lucro Médio / Corrida</span><span class="report-val text-emerald-500" id="avg-liq-run">R$ 0</span></div> 
-                <div class="report-row"><span>Lucro Médio / Hora</span><span class="report-val text-emerald-500" id="avg-liq-hour">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro / KM</span><span class="report-val text-emerald-500" id="avg-liq-km">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro / Dia</span><span class="report-val text-emerald-500" id="avg-liq-day">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro / Corrida</span><span class="report-val text-emerald-500" id="avg-liq-run">R$ 0</span></div> 
+                <div class="report-row"><span>Lucro / Hora</span><span class="report-val text-emerald-500" id="avg-liq-hour">R$ 0</span></div> 
             </div>
         </div> 
-        <button onclick="exportToPDF()" class="w-full glass-card p-6 bg-rose-600/20 border-b-4 border-rose-500 flex items-center justify-center gap-4 active:scale-95 transition-all"> 
-            <span class="text-2xl">📄</span> 
-            <span class="text-xl font-black uppercase italic">Gerar PDF</span> 
-        </button> 
+        <button onclick="window.exportToPDF()" class="w-full glass-card p-6 bg-rose-600/20 border-b-4 border-rose-500 flex items-center justify-center gap-4 uppercase italic font-black">Gerar PDF</button> 
     </section> 
 </main> 
 
 <nav class="fixed bottom-0 left-0 right-0 h-20 bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 flex items-center justify-around px-4 z-[100]"> 
-    <button onclick="showTab('dashboard')" id="nav-dash" class="btn-nav active-nav-dash flex flex-col items-center"> 
+    <button onclick="window.showTab('dashboard')" id="nav-dash" class="btn-nav active-nav-dash flex flex-col items-center"> 
         <div class="nav-icon-container"><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div> 
         <span class="label-micro">Painel</span> 
     </button> 
-    <button onclick="showTab('input')" id="nav-input" class="btn-nav text-slate-500 flex flex-col items-center"> 
+    <button onclick="window.showTab('input')" id="nav-input" class="btn-nav text-slate-500 flex flex-col items-center"> 
         <div class="nav-icon-container"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg></div> 
         <span class="label-micro">Lançar</span> 
     </button> 
-    <button onclick="showTab('reports')" id="nav-reports" class="btn-nav text-slate-500 flex flex-col items-center"> 
+    <button onclick="window.showTab('reports')" id="nav-reports" class="btn-nav text-slate-500 flex flex-col items-center"> 
         <div class="nav-icon-container"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div> 
         <span class="label-micro">Relatórios</span> 
     </button> 
@@ -201,13 +193,13 @@
 
 <div id="modal-entry" class="fixed inset-0 bg-black/98 backdrop-blur-3xl z-[200] hidden items-center justify-center p-4"> 
     <div class="glass-card w-full max-w-sm p-6 overflow-y-auto max-h-[90vh]"> 
-        <div class="flex justify-between items-center mb-6"> 
-            <h2 class="text-xl font-black italic uppercase">Registro</h2> 
-            <button onclick="deleteEntry()" id="btn-delete" class="hidden bg-rose-600 text-white px-4 py-1 rounded-xl font-black text-[10px] uppercase">Excluir</button> 
-        </div> 
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black italic uppercase text-white">Registro</h2> 
+            <button onclick="window.deleteEntry()" id="btn-delete" class="hidden bg-rose-600 text-white px-4 py-1 rounded-xl font-black text-[10px] uppercase">Excluir</button> 
+        </div>
         <form id="form-entry" class="space-y-4"> 
             <input type="hidden" id="edit-id"> 
-            <select id="entry-type" onchange="updateFormFields()" class="input-field font-bold text-sm"> 
+            <select id="entry-type" onchange="window.updateFormFields()" class="input-field font-bold text-sm"> 
                 <optgroup label="Ganhos"> 
                     <option value="gain">📱 App (Uber/99)</option> 
                     <option value="particular">🚗 Particular</option> 
@@ -216,25 +208,31 @@
                 <optgroup label="Gastos"> 
                     <option value="fuel">⛽ Abastecimento</option> 
                     <option value="maintenance">🛠️ Manutenção</option> 
-                    <option value="tax">📑 Taxas/Impostos</option> 
-                    <option value="expense">📉 Outros Gastos</option> 
+                    <option value="expense">📉 Outros</option> 
                 </optgroup> 
             </select> 
             <input type="number" step="0.01" id="entry-value" class="input-field text-3xl h-20 text-center" placeholder="R$ 0,00" required> 
             <input type="date" id="entry-date" class="input-field" required> 
+            
             <div id="fields-gain" class="space-y-4"> 
                 <div class="grid grid-cols-2 gap-3"> 
-                    <input type="number" id="gain-km" class="input-field text-sm" placeholder="KM"> 
-                    <input type="number" step="0.1" id="gain-hours" class="input-field text-sm" placeholder="Horas"> 
+                    <input type="number" id="gain-km" class="input-field text-sm" placeholder="KM Total"> 
+                    <input type="time" id="gain-hours" class="input-field text-sm"> 
                 </div> 
-                <input type="number" step="0.1" id="gain-cons" class="input-field text-sm" placeholder="Consumo (KM/L)"> 
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="gain-runs" class="input-field text-sm" placeholder="Qtd Corridas">
+                    <input type="number" step="0.1" id="gain-cons" class="input-field text-sm" placeholder="Consumo KM/L"> 
+                </div>
             </div> 
-            <div id="fields-fuel" class="hidden"> 
-                <input type="number" step="0.001" id="fuel-price" class="input-field text-sm" placeholder="Preço do Litro R$"> 
-            </div> 
-            <textarea id="entry-obs" class="input-field h-20 text-sm" placeholder="Observações..."></textarea> 
+
+            <div id="fields-fuel" class="hidden">
+                <input type="number" step="0.01" id="fuel-price" class="input-field text-sm" placeholder="Preço do Litro R$">
+            </div>
+
+            <textarea id="entry-obs" class="input-field h-20 text-sm" placeholder="Observações..."></textarea>
+
             <div class="flex gap-3 pt-4"> 
-                <button type="button" onclick="closeModal('entry')" class="flex-1 p-4 rounded-2xl bg-slate-800 font-black">FECHAR</button> 
+                <button type="button" onclick="window.closeModal('entry')" class="flex-1 p-4 rounded-2xl bg-slate-800 font-black">FECHAR</button> 
                 <button type="submit" class="flex-[2] p-4 rounded-2xl bg-emerald-600 font-black">GRAVAR</button> 
             </div> 
         </form> 
@@ -245,205 +243,212 @@
     <div class="glass-card w-full max-w-xs p-8 text-center"> 
         <h2 class="text-xl font-black italic mb-6 uppercase text-emerald-400">Meta Mensal</h2> 
         <input type="number" id="goal-input" class="input-field text-center text-2xl font-black mb-6"> 
-        <button onclick="saveGoal()" class="w-full p-4 rounded-2xl bg-emerald-600 font-black uppercase">Salvar</button> 
+        <button onclick="window.saveGoal()" class="w-full p-4 rounded-2xl bg-emerald-600 font-black uppercase">Salvar</button> 
+        <button onclick="window.closeModal('goal')" class="w-full mt-2 p-2 text-slate-500 font-bold uppercase">Cancelar</button>
     </div> 
 </div> 
 
 <script type="module"> 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"; 
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
-const firebaseConfig = { apiKey: "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ", authDomain: "driveflow-49296.firebaseapp.com", projectId: "driveflow-49296", storageBucket: "driveflow-49296.firebasestorage.app", messagingSenderId: "1067278316892", appId: "1:1067278316892:web:e72e316200e7379e9f7d99" }; 
-if(firebaseConfig.apiKey !== "SUA_API_KEY") { const app = initializeApp(firebaseConfig); window.db_cloud = getFirestore(app); } 
-</script> 
+// --- BLOCO FIREBASE ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<script> 
+const firebaseConfig = {
+    apiKey: "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ",
+    authDomain: "driveflow-49296.firebaseapp.com",
+    projectId: "driveflow-49296",
+    storageBucket: "driveflow-49296.firebasestorage.app",
+    messagingSenderId: "1067278316892",
+    appId: "1:1067278316892:web:e72e316200e7379e9f7d99"
+};
+
+let db_cloud;
+if (firebaseConfig.apiKey !== "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ") {
+    const app = initializeApp(firebaseConfig);
+    db_cloud = getFirestore(app);
+}
+
+async function syncToCloud() {
+    if (!db_cloud) return;
+    try {
+        await setDoc(doc(db_cloud, "usuarios", "motorista_01"), db);
+    } catch (e) { console.error("Erro sync:", e); }
+}
+// ----------------------
+
+let db = JSON.parse(localStorage.getItem('driveflow_v12')) || { entries: [], meta: 5000 }; 
 let myMainChart, myPieDash, myPieGains, myPieExpenses; 
-let db = JSON.parse(localStorage.getItem('driveflow_v9')) || { entries: [], meta: 5000 }; 
 
-// CORES CONTRASTANTES
 const categories = { 
-    gain: { label: 'App', icon: '📱', isGain: true, color: '#10b981' }, 
-    particular: { label: 'Particular', icon: '🚗', isGain: true, color: '#3b82f6' }, 
-    bonus: { label: 'Bônus', icon: '🎁', isGain: true, color: '#8b5cf6' }, 
-    fuel: { label: 'Gasolina', icon: '⛽', isGain: false, color: '#f43f5e' }, 
-    maintenance: { label: 'Manutenção', icon: '🛠️', isGain: false, color: '#f97316' }, 
-    tax: { label: 'Taxas', icon: '📑', isGain: false, color: '#eab308' }, 
-    expense: { label: 'Gastos', icon: '📉', isGain: false, color: '#ec4899' } 
+    gain: { label: 'App', isGain: true, color: '#10b981' }, 
+    particular: { label: 'Particular', isGain: true, color: '#3b82f6' }, 
+    bonus: { label: 'Bônus', isGain: true, color: '#8b5cf6' }, 
+    fuel: { label: 'Gasolina', isGain: false, color: '#f43f5e' }, 
+    maintenance: { label: 'Manutenção', isGain: false, color: '#f97316' }, 
+    expense: { label: 'Outros', isGain: false, color: '#ec4899' } 
 }; 
 
-document.addEventListener('DOMContentLoaded', () => { initDates(); initCharts(); updateAllData(); }); 
+// Helpers
+const timeToDecimal = (t) => { if(!t) return 0; const [h, m] = t.split(':'); return parseInt(h) + (parseInt(m)/60); };
+const decimalToTime = (d) => { const h = Math.floor(d); const m = Math.round((d - h) * 60); return `${h}h ${m.toString().padStart(2, '0')}m`; };
+const decimalToTimeInput = (d) => { const h = Math.floor(d); const m = Math.round((d - h) * 60); return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`; };
 
-function showTab(id) { 
+window.showTab = (id) => { 
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
     document.getElementById('tab-' + id).classList.add('active'); 
-    document.querySelectorAll('.btn-nav').forEach(b => b.className = 'btn-nav text-slate-500 flex flex-col items-center'); 
-    const activeClass = id === 'dashboard' ? 'active-nav-dash' : id === 'input' ? 'active-nav-input' : 'active-nav-report'; 
-    document.getElementById('nav-' + (id==='reports'?'reports':id==='dashboard'?'dash':'input')).className = `btn-nav ${activeClass} flex flex-col items-center`; 
-} 
+};
 
-function initCharts() { 
-    const chartOptions = { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        scales: {
-            x: { stacked: true, grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
-            y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } }
-        },
-        plugins: { legend: { display: false } } 
-    };
+window.initCharts = () => { 
+    const opt = { 
+        responsive: true, maintainAspectRatio: false, 
+        plugins: { 
+            legend: { display: true, position: 'bottom', labels: { color: '#64748b', font: { size: 10 } } },
+            tooltip: { callbacks: { label: (ctx) => { let sum = ctx.dataset.data.reduce((a, b) => a + b, 0); return `${ctx.label}: R$ ${ctx.raw.toFixed(2)} (${((ctx.raw/sum)*100).toFixed(1)}%)`; } } }
+        } 
+    }; 
+    myMainChart = new Chart(document.getElementById('chartMainReport'), { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display: false } } } });
+    myPieDash = new Chart(document.getElementById('chartPieDash'), { type: 'doughnut', data: { labels: ['Ganhos', 'Despesas'], datasets: [{ data: [1, 0], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { ...opt, plugins: { legend: { display: false } } } });
+    myPieGains = new Chart(document.getElementById('chartPieGains'), { type: 'pie', data: { labels: [], datasets: [] }, options: opt });
+    myPieExpenses = new Chart(document.getElementById('chartPieExpenses'), { type: 'pie', data: { labels: [], datasets: [] }, options: opt });
+};
 
-    myMainChart = new Chart(document.getElementById('chartMainReport'), { type: 'bar', data: { labels: [], datasets: [] }, options: chartOptions });
-    myPieDash = new Chart(document.getElementById('chartPieDash'), { type: 'doughnut', data: { labels: ['Ganhos', 'Gastos'], datasets: [{ data: [1, 0], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-    
-    const pieOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff', font: { size: 10 } } } } };
-    myPieGains = new Chart(document.getElementById('chartPieGains'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt }); 
-    myPieExpenses = new Chart(document.getElementById('chartPieExpenses'), { type: 'pie', data: { labels: [], datasets: [] }, options: pieOpt }); 
-} 
+window.updateAllData = () => { 
+    const start = document.getElementById('date-start').value; 
+    const end = document.getElementById('date-end').value; 
+    const filtered = db.entries.filter(i => i.date >= start && i.date <= end); 
 
-function updateAllData() { 
-    const startStr = document.getElementById('date-start').value; 
-    const endStr = document.getElementById('date-end').value; 
-    const filtered = db.entries.filter(i => i.date >= startStr && i.date <= endStr); 
-    
+    const daysCount = [...new Set(filtered.map(i => i.date))].length || 1;
     const totalG = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
     const totalE = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
     const totalKM = filtered.reduce((a,b) => a + (b.km || 0), 0); 
     const totalH = filtered.reduce((a,b) => a + (b.hours || 0), 0); 
-    const runs = filtered.filter(i => categories[i.type].isGain).length || 1; 
-    const daysCount = [...new Set(filtered.map(i => i.date))].length || 1; 
-    const liquidoReal = totalG - totalE; 
-    const lastPrice = filtered.filter(i => i.type === 'fuel').reverse()[0]?.fuelPrice || 5.80; 
-    const fuelEst = filtered.filter(i => categories[i.type].isGain && i.cons > 0).reduce((a,b) => a + ((b.km/b.cons) * lastPrice), 0); 
+    const totalRuns = filtered.reduce((a,b) => a + (b.runs || 0), 0);
 
-    // UI Updates
-    document.getElementById('dash-net-profit').innerText = `R$ ${liquidoReal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
+    const lastFuelPrice = filtered.filter(i => i.type === 'fuel').reverse()[0]?.fuelPrice || 5.80;
+    const fuelEst = filtered.filter(i => i.type === 'gain' && i.cons > 0).reduce((a,b) => a + ((b.km/b.cons) * lastFuelPrice), 0); 
+    const net = totalG - totalE - fuelEst;
+
+    // Atualização do Gráfico de Pizza do Painel (Corrigido)
+    myPieDash.data.datasets[0].data = [totalG, (totalE + fuelEst)];
+    myPieDash.update();
+
+    document.getElementById('dash-net-profit').innerText = `R$ ${net.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('ind-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR')}`; 
     document.getElementById('ind-expense').innerText = `R$ ${totalE.toLocaleString('pt-BR')}`; 
-    
     document.getElementById('perf-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00'; 
     document.getElementById('perf-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00'; 
-    document.getElementById('perf-cost-hour').innerText = totalH > 0 ? `R$ ${(totalE/totalH).toFixed(2)}` : 'R$ 0,00'; 
-    document.getElementById('perf-margin').innerText = totalG > 0 ? ((liquidoReal/totalG)*100).toFixed(0) + '%' : '0%'; 
+    document.getElementById('perf-margin').innerText = totalG > 0 ? ((net/totalG)*100).toFixed(0) + '%' : '0%'; 
 
-    // Relatório
     document.getElementById('rep-total-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('rep-total-loss').innerText = `R$ ${totalE.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('rep-fuel-est').innerText = `R$ ${fuelEst.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-    document.getElementById('rep-net').innerText = `R$ ${liquidoReal.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-    document.getElementById('rep-days').innerText = daysCount; 
+    document.getElementById('rep-net').innerText = `R$ ${net.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('rep-km').innerText = totalKM.toFixed(1) + ' km'; 
-    document.getElementById('rep-hours').innerText = totalH.toFixed(1) + 'h'; 
-    document.getElementById('rep-avg-dist-day').innerText = (totalKM / daysCount).toFixed(1) + ' km'; 
+    document.getElementById('rep-hours').innerText = decimalToTime(totalH); // Formato relógio corrigido
+    document.getElementById('rep-total-runs').innerText = totalRuns;
 
     document.getElementById('avg-bruto-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00'; 
-    document.getElementById('avg-bruto-day').innerText = `R$ ${(totalG/daysCount).toFixed(2)}`; 
-    document.getElementById('avg-bruto-run').innerText = `R$ ${(totalG/runs).toFixed(2)}`; 
-    document.getElementById('avg-bruto-hour').innerText = totalH > 0 ? `R$ ${(totalG/totalH).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('avg-bruto-day').innerText = `R$ ${(totalG/daysCount).toFixed(2)}`;
+    document.getElementById('avg-bruto-run').innerText = totalRuns > 0 ? `R$ ${(totalG/totalRuns).toFixed(2)}` : 'R$ 0,00'; 
 
-    document.getElementById('avg-liq-km').innerText = totalKM > 0 ? `R$ ${(liquidoReal/totalKM).toFixed(2)}` : 'R$ 0,00'; 
-    document.getElementById('avg-liq-day').innerText = `R$ ${(liquidoReal/daysCount).toFixed(2)}`; 
-    document.getElementById('avg-liq-run').innerText = `R$ ${(liquidoReal/runs).toFixed(2)}`; 
-    document.getElementById('avg-liq-hour').innerText = totalH > 0 ? `R$ ${(liquidoReal/totalH).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('avg-liq-km').innerText = totalKM > 0 ? `R$ ${(net/totalKM).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('avg-liq-day').innerText = `R$ ${(net/daysCount).toFixed(2)}`;
+    document.getElementById('avg-liq-run').innerText = totalRuns > 0 ? `R$ ${(net/totalRuns).toFixed(2)}` : 'R$ 0,00'; 
+    document.getElementById('avg-liq-hour').innerText = totalH > 0 ? `R$ ${(net/totalH).toFixed(2)}` : 'R$ 0,00'; 
 
-    const perc = Math.min((liquidoReal / db.meta) * 100, 100); 
+    const perc = Math.min((net / db.meta) * 100, 100); 
     document.getElementById('progress-bar').style.width = Math.max(perc, 0) + '%'; 
     document.getElementById('goal-percent').innerText = Math.round(perc) + '%'; 
     document.getElementById('goal-value-display').innerText = `Alvo: R$ ${db.meta.toLocaleString()}`; 
 
-    updateCharts(filtered, daysCount); 
+    window.updateCharts(filtered); 
+
     document.getElementById('history-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(i => ` 
-        <div onclick="openModalEntry(${i.id})" class="glass-card p-5 flex justify-between items-center border-l-[8px] ${categories[i.type].isGain ? 'border-emerald-500' : 'border-rose-500'}"> 
-            <div> 
-                <p class="label-micro">${i.date.split('-').reverse().join('/')}</p> 
-                <p class="text-lg font-black uppercase italic">${categories[i.type].icon} ${categories[i.type].label}</p> 
-            </div> 
-            <div class="text-right"> 
-                <p class="text-xl font-black ${categories[i.type].isGain ? 'text-emerald-400' : 'text-rose-400'}"> 
-                    ${categories[i.type].isGain ? '+' : '-'} R$ ${i.value.toFixed(2)} 
-                </p> 
-            </div> 
-        </div>`).join(''); 
-} 
+        <div onclick="window.openModalEntry(${i.id})" class="glass-card p-5 flex justify-between items-center border-l-[8px] ${categories[i.type].isGain ? 'border-emerald-500' : 'border-rose-500'}"> 
+            <div><p class="label-micro">${i.date.split('-').reverse().join('/')}</p><p class="text-lg font-black uppercase italic text-white">${categories[i.type].label}</p></div> 
+            <p class="text-xl font-black ${categories[i.type].isGain ? 'text-emerald-400' : 'text-rose-400'}">R$ ${i.value.toFixed(2)}</p> 
+        </div>`).join('');
+}; 
 
-function updateCharts(filtered, diff) { 
-    const g = filtered.filter(i => categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
-    const e = filtered.filter(i => !categories[i.type].isGain).reduce((a,b) => a + b.value, 0); 
-    myPieDash.data.datasets[0].data = [g || 1, e]; 
-    myPieDash.update(); 
-    
+window.updateCharts = (filtered) => {
     const labels = [...new Set(filtered.map(i => i.date))].sort();
-    if (labels.length > 0) {
-        document.getElementById('category-charts').classList.remove('hidden');
-        const dataGains = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
-        const dataExp = labels.map(l => filtered.filter(i => i.date === l && !categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
-        const dataLine = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
+    const dataG = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
+    const dataE = labels.map(l => filtered.filter(i => i.date === l && !categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
+    myMainChart.data.labels = labels.map(l => l.split('-').reverse().slice(0,2).join('/'));
+    myMainChart.data.datasets = [{ type: 'line', label: 'Demanda', data: dataG, borderColor: '#94a3b8', tension: 0.1, order: 1 }, { label: 'Ganhos', data: dataG, backgroundColor: '#10b981', barPercentage: 0.5, order: 2 }, { label: 'Gastos', data: dataE, backgroundColor: '#f43f5e', barPercentage: 0.5, order: 2 }];
+    myMainChart.update();
+    const gainsMap = {}, expMap = {};
+    filtered.forEach(i => { if(categories[i.type].isGain) gainsMap[i.type] = (gainsMap[i.type] || 0) + i.value; else expMap[i.type] = (expMap[i.type] || 0) + i.value; });
+    myPieGains.data.labels = Object.keys(gainsMap).map(k => categories[k].label);
+    myPieGains.data.datasets = [{ data: Object.values(gainsMap), backgroundColor: Object.keys(gainsMap).map(k => categories[k].color) }];
+    myPieGains.update();
+    myPieExpenses.data.labels = Object.keys(expMap).map(k => categories[k].label);
+    myPieExpenses.data.datasets = [{ data: Object.values(expMap), backgroundColor: Object.keys(expMap).map(k => categories[k].color) }];
+    myPieExpenses.update();
+};
 
-        myMainChart.data.labels = labels.map(l => l.split('-').reverse().slice(0,2).join('/'));
-        myMainChart.data.datasets = [
-            { type: 'line', label: 'Demanda', data: dataLine, borderColor: '#94a3b8', borderWidth: 2, pointRadius: 3, tension: 0.1, order: 1 },
-            { label: 'Ganhos', data: dataGains, backgroundColor: '#10b981', barPercentage: 0.6, order: 2 },
-            { label: 'Gastos', data: dataExp, backgroundColor: '#f43f5e', barPercentage: 0.6, order: 2 }
-        ];
-        myMainChart.update();
-
-        const gainsMap = {}, expMap = {}; 
-        filtered.forEach(i => { if(categories[i.type].isGain) gainsMap[i.type] = (gainsMap[i.type] || 0) + i.value; else expMap[i.type] = (expMap[i.type] || 0) + i.value; }); 
-        myPieGains.data.labels = Object.keys(gainsMap).map(k => categories[k].label); 
-        myPieGains.data.datasets = [{ data: Object.values(gainsMap), backgroundColor: Object.keys(gainsMap).map(k => categories[k].color), borderWidth: 0 }]; 
-        myPieGains.update(); 
-        myPieExpenses.data.labels = Object.keys(expMap).map(k => categories[k].label); 
-        myPieExpenses.data.datasets = [{ data: Object.values(expMap), backgroundColor: Object.keys(expMap).map(k => categories[k].color), borderWidth: 0 }]; 
-        myPieExpenses.update(); 
-    }
-} 
-
-function openModalEntry(id = null) { 
+window.openModalEntry = (id = null) => { 
     document.getElementById('form-entry').reset(); 
-    document.getElementById('edit-id').value = id || ''; 
-    document.getElementById('btn-delete').classList.toggle('hidden', !id); 
-    if(id) { 
-        const i = db.entries.find(e => e.id == id); 
-        document.getElementById('entry-type').value = i.type; 
-        document.getElementById('entry-value').value = i.value; 
-        document.getElementById('entry-date').value = i.date; 
-        document.getElementById('gain-km').value = i.km || ''; 
-        document.getElementById('gain-hours').value = i.hours || ''; 
-        document.getElementById('gain-cons').value = i.cons || ''; 
-        document.getElementById('fuel-price').value = i.fuelPrice || ''; 
-        document.getElementById('entry-obs').value = i.obs || ''; 
-    } 
-    updateFormFields(); document.getElementById('modal-entry').classList.replace('hidden', 'flex'); 
-} 
-function closeModal(m) { document.getElementById('modal-' + m).classList.replace('flex', 'hidden'); } 
-function updateFormFields() { 
+    document.getElementById('edit-id').value = id || '';
+    document.getElementById('btn-delete').classList.toggle('hidden', !id);
+    if(id) {
+        const item = db.entries.find(e => e.id == id);
+        document.getElementById('entry-type').value = item.type;
+        document.getElementById('entry-value').value = item.value;
+        document.getElementById('entry-date').value = item.date;
+        document.getElementById('gain-km').value = item.km || '';
+        document.getElementById('gain-hours').value = item.hours ? decimalToTimeInput(item.hours) : '';
+        document.getElementById('gain-runs').value = item.runs || '';
+        document.getElementById('gain-cons').value = item.cons || '';
+        document.getElementById('fuel-price').value = item.fuelPrice || '';
+        document.getElementById('entry-obs').value = item.obs || '';
+    }
+    document.getElementById('modal-entry').classList.replace('hidden', 'flex'); 
+    window.updateFormFields(); 
+};
+
+window.deleteEntry = () => {
+    const id = document.getElementById('edit-id').value;
+    if(confirm('Excluir permanentemente?')) {
+        db.entries = db.entries.filter(e => e.id != id);
+        localStorage.setItem('driveflow_v12', JSON.stringify(db));
+        syncToCloud();
+        window.closeModal('entry');
+        window.updateAllData();
+    }
+};
+
+window.closeModal = (m) => { document.getElementById('modal-' + m).classList.replace('flex', 'hidden'); };
+window.updateFormFields = () => { 
     const t = document.getElementById('entry-type').value; 
     document.getElementById('fields-gain').classList.toggle('hidden', !categories[t].isGain); 
-    document.getElementById('fields-fuel').classList.toggle('hidden', t !== 'fuel'); 
-} 
-document.getElementById('form-entry').onsubmit = async (e) => { 
+    document.getElementById('fields-fuel').classList.toggle('hidden', t !== 'fuel');
+};
+
+document.getElementById('form-entry').onsubmit = (e) => { 
     e.preventDefault(); 
-    const id = document.getElementById('edit-id').value; 
-    const data = { id: id ? parseInt(id) : Date.now(), type: document.getElementById('entry-type').value, value: parseFloat(document.getElementById('entry-value').value), date: document.getElementById('entry-date').value, km: parseFloat(document.getElementById('gain-km').value) || 0, hours: parseFloat(document.getElementById('gain-hours').value) || 0, cons: parseFloat(document.getElementById('gain-cons').value) || 0, fuelPrice: parseFloat(document.getElementById('fuel-price').value) || 0, obs: document.getElementById('entry-obs').value }; 
-    if(id) { const idx = db.entries.findIndex(e => e.id == id); db.entries[idx] = data; } else db.entries.push(data); 
-    localStorage.setItem('driveflow_v9', JSON.stringify(db)); 
-    if(window.db_cloud) { try { await setDoc(doc(window.db_cloud, "entries", data.id.toString()), data); } catch(err) { console.error("Erro Nuvem:", err); } } 
-    closeModal('entry'); updateAllData(); 
-}; 
-function deleteEntry() { if(confirm('Excluir este registro?')) { db.entries = db.entries.filter(e => e.id != document.getElementById('edit-id').value); localStorage.setItem('driveflow_v9', JSON.stringify(db)); closeModal('entry'); updateAllData(); } } 
-function saveGoal() { db.meta = parseFloat(document.getElementById('goal-input').value) || 0; localStorage.setItem('driveflow_v9', JSON.stringify(db)); closeModal('goal'); updateAllData(); } 
-function openModalGoal() { document.getElementById('goal-input').value = db.meta; document.getElementById('modal-goal').classList.replace('hidden', 'flex'); } 
-function initDates() { 
-    const now = new Date(); 
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]; 
-    const today = now.toISOString().split('T')[0]; 
-    document.getElementById('date-start').value = firstDay; 
-    document.getElementById('date-end').value = today; 
-    document.getElementById('display-date').innerText = now.toLocaleString('pt-br', {month:'long', year:'numeric'}); 
-} 
-function exportToPDF() { 
+    const id = document.getElementById('edit-id').value;
+    const data = { 
+        id: id ? parseInt(id) : Date.now(), type: document.getElementById('entry-type').value, value: parseFloat(document.getElementById('entry-value').value), date: document.getElementById('entry-date').value, 
+        km: parseFloat(document.getElementById('gain-km').value) || 0, hours: timeToDecimal(document.getElementById('gain-hours').value), runs: parseInt(document.getElementById('gain-runs').value) || 0,
+        cons: parseFloat(document.getElementById('gain-cons').value) || 0, fuelPrice: parseFloat(document.getElementById('fuel-price').value) || 0, obs: document.getElementById('entry-obs').value
+    }; 
+    if(id) { const idx = db.entries.findIndex(e => e.id == id); db.entries[idx] = data; } else { db.entries.push(data); }
+    localStorage.setItem('driveflow_v12', JSON.stringify(db)); 
+    syncToCloud();
+    window.closeModal('entry'); window.updateAllData(); 
+};
+
+window.saveGoal = () => { db.meta = parseFloat(document.getElementById('goal-input').value) || 0; localStorage.setItem('driveflow_v12', JSON.stringify(db)); syncToCloud(); window.closeModal('goal'); window.updateAllData(); };
+window.openModalGoal = () => { document.getElementById('goal-input').value = db.meta; document.getElementById('modal-goal').classList.replace('hidden', 'flex'); };
+
+window.exportToPDF = () => { 
     const element = document.getElementById('printable-report'); 
-    html2pdf().set({ margin: 10, filename: 'DriveFlow_Relatorio.pdf', html2canvas: { scale: 2, backgroundColor: '#020617' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save(); 
-} 
+    html2pdf().set({ margin: 5, filename: 'DriveFlow_Relatorio.pdf', html2canvas: { scale: 2, backgroundColor: '#020617' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save(); 
+};
+
+const initDates = () => { const today = new Date().toISOString().split('T')[0]; document.getElementById('date-start').value = today.substring(0,8) + '01'; document.getElementById('date-end').value = today; };
+initDates(); window.initCharts(); window.updateAllData();
 </script>
 </body>
 </html>
