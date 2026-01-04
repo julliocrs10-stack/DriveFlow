@@ -142,10 +142,9 @@
             <div class="glass-card p-6 space-y-2"> 
                 <h3 class="label-micro mb-4 border-b border-white/10 pb-2 text-white">Financeiro Detalhado</h3> 
                 <div class="report-row"><span>Ganhos Totais</span><span class="report-val text-emerald-400" id="rep-total-gain">R$ 0</span></div> 
-                <div class="report-row"><span>Despesas Lançadas</span><span class="report-val text-rose-400" id="rep-total-loss">R$ 0</span></div> 
-                <div class="report-row"><span>Gasto Combustível (Est.)</span><span class="report-val text-orange-400" id="rep-fuel-est">R$ 0</span></div> 
+                <div class="report-row"><span>Despesas Totais</span><span class="report-val text-rose-400" id="rep-total-loss">R$ 0</span></div> 
                 <div class="report-row pt-4 border-t-2 border-slate-700"> 
-                    <span class="font-black text-white">LUCRO LÍQUIDO</span> 
+                    <span class="font-black text-white">LUCRO LÍQUIDO REAL</span> 
                     <span class="report-val text-emerald-400 text-2xl" id="rep-net">R$ 0</span> 
                 </div> 
             </div> 
@@ -221,12 +220,12 @@
                 </div> 
                 <div class="grid grid-cols-2 gap-3">
                     <input type="number" id="gain-runs" class="input-field text-sm" placeholder="Qtd Corridas">
-                    <input type="number" step="0.1" id="gain-cons" class="input-field text-sm" placeholder="Consumo KM/L"> 
+                    <input type="hidden" id="gain-cons" value="0">
                 </div>
             </div> 
 
             <div id="fields-fuel" class="hidden">
-                <input type="number" step="0.01" id="fuel-price" class="input-field text-sm" placeholder="Preço do Litro R$">
+                <input type="hidden" id="fuel-price" value="0">
             </div>
 
             <textarea id="entry-obs" class="input-field h-20 text-sm" placeholder="Observações..."></textarea>
@@ -263,10 +262,8 @@ const firebaseConfig = {
 };
 
 let db_cloud;
-if (firebaseConfig.apiKey !== "AIzaSyBSqGpuqpYNukyZqaBUcu35K1fVjxPrQNQ") {
-    const app = initializeApp(firebaseConfig);
-    db_cloud = getFirestore(app);
-}
+const app = initializeApp(firebaseConfig);
+db_cloud = getFirestore(app);
 
 async function syncToCloud() {
     if (!db_cloud) return;
@@ -302,12 +299,11 @@ window.initCharts = () => {
     const opt = { 
         responsive: true, maintainAspectRatio: false, 
         plugins: { 
-            legend: { display: true, position: 'bottom', labels: { color: '#64748b', font: { size: 10 } } },
-            tooltip: { callbacks: { label: (ctx) => { let sum = ctx.dataset.data.reduce((a, b) => a + b, 0); return `${ctx.label}: R$ ${ctx.raw.toFixed(2)} (${((ctx.raw/sum)*100).toFixed(1)}%)`; } } }
+            legend: { display: true, position: 'bottom', labels: { color: '#64748b', font: { size: 10 } } }
         } 
     }; 
     myMainChart = new Chart(document.getElementById('chartMainReport'), { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { display: false } } } });
-    myPieDash = new Chart(document.getElementById('chartPieDash'), { type: 'doughnut', data: { labels: ['Ganhos', 'Despesas'], datasets: [{ data: [1, 0], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { ...opt, plugins: { legend: { display: false } } } });
+    myPieDash = new Chart(document.getElementById('chartPieDash'), { type: 'doughnut', data: { labels: ['Ganhos', 'Despesas'], datasets: [{ data: [1, 1], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }] }, options: { ...opt, plugins: { legend: { display: false } } } });
     myPieGains = new Chart(document.getElementById('chartPieGains'), { type: 'pie', data: { labels: [], datasets: [] }, options: opt });
     myPieExpenses = new Chart(document.getElementById('chartPieExpenses'), { type: 'pie', data: { labels: [], datasets: [] }, options: opt });
 };
@@ -324,12 +320,10 @@ window.updateAllData = () => {
     const totalH = filtered.reduce((a,b) => a + (b.hours || 0), 0); 
     const totalRuns = filtered.reduce((a,b) => a + (b.runs || 0), 0);
 
-    const lastFuelPrice = filtered.filter(i => i.type === 'fuel').reverse()[0]?.fuelPrice || 5.80;
-    const fuelEst = filtered.filter(i => i.type === 'gain' && i.cons > 0).reduce((a,b) => a + ((b.km/b.cons) * lastFuelPrice), 0); 
-    const net = totalG - totalE - fuelEst;
+    const net = totalG - totalE;
 
-    // Atualização do Gráfico de Pizza do Painel (Corrigido)
-    myPieDash.data.datasets[0].data = [totalG, (totalE + fuelEst)];
+    // Atualização do Gráfico de Pizza (Puro Ganhos vs Despesas)
+    myPieDash.data.datasets[0].data = [totalG || 1, totalE || 0.0001];
     myPieDash.update();
 
     document.getElementById('dash-net-profit').innerText = `R$ ${net.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
@@ -341,10 +335,9 @@ window.updateAllData = () => {
 
     document.getElementById('rep-total-gain').innerText = `R$ ${totalG.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('rep-total-loss').innerText = `R$ ${totalE.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
-    document.getElementById('rep-fuel-est').innerText = `R$ ${fuelEst.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('rep-net').innerText = `R$ ${net.toLocaleString('pt-BR', {minimumFractionDigits:2})}`; 
     document.getElementById('rep-km').innerText = totalKM.toFixed(1) + ' km'; 
-    document.getElementById('rep-hours').innerText = decimalToTime(totalH); // Formato relógio corrigido
+    document.getElementById('rep-hours').innerText = decimalToTime(totalH); 
     document.getElementById('rep-total-runs').innerText = totalRuns;
 
     document.getElementById('avg-bruto-km').innerText = totalKM > 0 ? `R$ ${(totalG/totalKM).toFixed(2)}` : 'R$ 0,00'; 
@@ -375,7 +368,7 @@ window.updateCharts = (filtered) => {
     const dataG = labels.map(l => filtered.filter(i => i.date === l && categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
     const dataE = labels.map(l => filtered.filter(i => i.date === l && !categories[i.type].isGain).reduce((a,b) => a + b.value, 0));
     myMainChart.data.labels = labels.map(l => l.split('-').reverse().slice(0,2).join('/'));
-    myMainChart.data.datasets = [{ type: 'line', label: 'Demanda', data: dataG, borderColor: '#94a3b8', tension: 0.1, order: 1 }, { label: 'Ganhos', data: dataG, backgroundColor: '#10b981', barPercentage: 0.5, order: 2 }, { label: 'Gastos', data: dataE, backgroundColor: '#f43f5e', barPercentage: 0.5, order: 2 }];
+    myMainChart.data.datasets = [{ type: 'line', label: 'Tendência', data: dataG, borderColor: '#94a3b8', tension: 0.1, order: 1 }, { label: 'Ganhos', data: dataG, backgroundColor: '#10b981', barPercentage: 0.5, order: 2 }, { label: 'Gastos', data: dataE, backgroundColor: '#f43f5e', barPercentage: 0.5, order: 2 }];
     myMainChart.update();
     const gainsMap = {}, expMap = {};
     filtered.forEach(i => { if(categories[i.type].isGain) gainsMap[i.type] = (gainsMap[i.type] || 0) + i.value; else expMap[i.type] = (expMap[i.type] || 0) + i.value; });
@@ -398,9 +391,6 @@ window.openModalEntry = (id = null) => {
         document.getElementById('entry-date').value = item.date;
         document.getElementById('gain-km').value = item.km || '';
         document.getElementById('gain-hours').value = item.hours ? decimalToTimeInput(item.hours) : '';
-        document.getElementById('gain-runs').value = item.runs || '';
-        document.getElementById('gain-cons').value = item.cons || '';
-        document.getElementById('fuel-price').value = item.fuelPrice || '';
         document.getElementById('entry-obs').value = item.obs || '';
     }
     document.getElementById('modal-entry').classList.replace('hidden', 'flex'); 
@@ -422,7 +412,6 @@ window.closeModal = (m) => { document.getElementById('modal-' + m).classList.rep
 window.updateFormFields = () => { 
     const t = document.getElementById('entry-type').value; 
     document.getElementById('fields-gain').classList.toggle('hidden', !categories[t].isGain); 
-    document.getElementById('fields-fuel').classList.toggle('hidden', t !== 'fuel');
 };
 
 document.getElementById('form-entry').onsubmit = (e) => { 
@@ -431,7 +420,7 @@ document.getElementById('form-entry').onsubmit = (e) => {
     const data = { 
         id: id ? parseInt(id) : Date.now(), type: document.getElementById('entry-type').value, value: parseFloat(document.getElementById('entry-value').value), date: document.getElementById('entry-date').value, 
         km: parseFloat(document.getElementById('gain-km').value) || 0, hours: timeToDecimal(document.getElementById('gain-hours').value), runs: parseInt(document.getElementById('gain-runs').value) || 0,
-        cons: parseFloat(document.getElementById('gain-cons').value) || 0, fuelPrice: parseFloat(document.getElementById('fuel-price').value) || 0, obs: document.getElementById('entry-obs').value
+        obs: document.getElementById('entry-obs').value
     }; 
     if(id) { const idx = db.entries.findIndex(e => e.id == id); db.entries[idx] = data; } else { db.entries.push(data); }
     localStorage.setItem('driveflow_v12', JSON.stringify(db)); 
